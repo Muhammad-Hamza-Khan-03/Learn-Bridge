@@ -16,9 +16,8 @@ import {
   Sun,
   Moon,
 } from "lucide-react"
-import { ThemeProvider, useTheme } from "../ui/theme-context"
-
-// Wrap the entire App component with ThemeProvider
+import { ThemeProvider, useTheme } from "../../components/ui/theme-context"
+import SignInModal from "../../components/auth-modals/sign-in"
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("student")
@@ -26,6 +25,7 @@ function LandingPage() {
   const [loginType, setLoginType] = useState("student")
   const [activeFeature, setActiveFeature] = useState(0)
   const { theme, toggleTheme } = useTheme()
+//   const { user, isAuthenticated, isLoading, error } = useSelector((state) => state.auth)
 
   const features = [
     {
@@ -317,20 +317,10 @@ function LandingPage() {
               <div
                 className={`absolute -top-6 -right-6 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-300"} p-4 rounded-lg shadow-lg hidden md:block z-20`}
               >
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                  <span className={`text-sm ${theme === "dark" ? "" : "text-gray-900"}`}>24 Online Tutors</span>
-                </div>
+                
               </div>
 
-              <div
-                className={`absolute -bottom-6 -left-6 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-300"} p-4 rounded-lg shadow-lg hidden md:block z-20`}
-              >
-                <div className="flex items-center">
-                  <Clock className={`h-4 w-4 ${theme === "dark" ? "text-blue-400" : "text-blue-600"} mr-2`} />
-                  <span className={`text-sm ${theme === "dark" ? "" : "text-gray-900"}`}>Schedule in minutes</span>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -479,9 +469,6 @@ function LandingPage() {
                 <div
                   className={`relative z-10 ${theme === "dark" ? "bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700" : "bg-gradient-to-r from-gray-100 to-white border border-gray-300"} p-3 rounded-2xl shadow-2xl`}
                 >
-                  <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center z-20">
-                    <User className="h-6 w-6 text-white" />
-                  </div>
                   <div className="rounded-xl overflow-hidden relative z-10">
                     <img
                       src="/placeholder.svg?height=500&width=600"
@@ -493,14 +480,7 @@ function LandingPage() {
                   </div>
                 </div>
 
-                <div
-                  className={`absolute -bottom-6 -right-6 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-300"} p-4 rounded-lg shadow-lg hidden md:block z-20`}
-                >
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className={`text-sm ${theme === "dark" ? "" : "text-gray-900"}`}>Find the perfect tutor</span>
-                  </div>
-                </div>
+                
               </div>
             </div>
           )}
@@ -512,9 +492,6 @@ function LandingPage() {
                 <div
                   className={`relative z-10 ${theme === "dark" ? "bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700" : "bg-gradient-to-r from-gray-100 to-white border border-gray-300"} p-3 rounded-2xl shadow-2xl`}
                 >
-                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center z-20">
-                    <BookOpen className="h-6 w-6 text-white" />
-                  </div>
                   <div className="rounded-xl overflow-hidden relative z-10">
                     <img
                       src="/placeholder.svg?height=500&width=600"
@@ -526,14 +503,7 @@ function LandingPage() {
                   </div>
                 </div>
 
-                <div
-                  className={`absolute -bottom-6 -left-6 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-300"} p-4 rounded-lg shadow-lg hidden md:block z-20`}
-                >
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className={`text-sm ${theme === "dark" ? "" : "text-gray-900"}`}>Manage your courses</span>
-                  </div>
-                </div>
+               
               </div>
 
               <div>
@@ -789,7 +759,7 @@ function LandingPage() {
       </footer>
 
       {/* Sign In Modal */}
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div
@@ -880,12 +850,7 @@ function LandingPage() {
                     type="checkbox"
                     className={`h-4 w-4 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-300"} rounded focus:ring-blue-500`}
                   />
-                  <label
-                    htmlFor="remember-me"
-                    className={`ml-2 block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    Remember me
-                  </label>
+                 
                 </div>
                 <a href="#" className="text-sm text-blue-400 hover:text-blue-300">
                   Forgot password?
@@ -898,6 +863,16 @@ function LandingPage() {
               >
                 Sign In
               </button>
+              <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-md transition-colors" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
+        </button>
 
               <div className="text-center mt-4">
                 <span className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
@@ -910,7 +885,13 @@ function LandingPage() {
             </form>
           </div>
         </div>
-      )}
+      )} */}
+
+<SignInModal
+  isModalOpen={isModalOpen}
+  setIsModalOpen={setIsModalOpen}
+  theme={theme}
+/>
     </div>
   )
 }
@@ -918,8 +899,7 @@ function LandingPage() {
 // Wrap the App component with ThemeProvider
 export default function AppWithTheme() {
   return (
-    <ThemeProvider>
       <LandingPage />
-    </ThemeProvider>
+    
   )
 }
