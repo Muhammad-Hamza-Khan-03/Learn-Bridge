@@ -1,5 +1,5 @@
 import { useState } from "react"
-import {Link} from "react-router"
+import { Link } from "react-router"
 import {
   BookOpen,
   ArrowRight,
@@ -14,9 +14,13 @@ import {
   Sun,
   Moon,
 } from "lucide-react"
+import {useDispatch} from "react-redux"
 import { useTheme } from "../../components/ui/theme-context"
+import { registerUser } from "../../redux/slices/authSlice"
+const SignupPage = () => {
 
-const SignupPage=()=> {
+  const AUTH_BASE = "http://localhost:5000/api/auth"
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,6 +48,7 @@ const SignupPage=()=> {
   const { theme, toggleTheme } = useTheme()
 
   const { name, email, password, password2, role, country, bio } = formData
+  const dispatch = useDispatch()
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -127,18 +132,45 @@ const SignupPage=()=> {
     return Object.keys(errors).length === 0
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
-
-    if (validateForm()) {
-      setIsLoading(true)
-
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false)
-        // Redirect would happen here after successful registration
-        alert("Registration successful!")
-      }, 1500)
+  
+    if (!validateForm()) return
+  
+    setIsLoading(true)
+  
+    // todo: admin role ifff
+    const commonData = {
+      ...formData,
+      ...(role === "student" ? studentData : {}),
+      ...(role === "tutor" ? tutorData : {}),
+     
+      
+    }
+  
+    try {
+      const response = await fetch(`${AUTH_BASE}/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(commonData),
+      })
+  
+      const data = await response.json()
+  
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed")
+      }
+  
+      // Save to Redux store
+      dispatch(registerUser(data.user)) 
+      alert("Registration successful!")
+    } catch (err) {
+      console.error("Signup error:", err)
+      alert(err.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -213,25 +245,23 @@ const SignupPage=()=> {
                 >
                   <button
                     onClick={() => setFormData({ ...formData, role: "student" })}
-                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${
-                      role === "student"
+                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${role === "student"
                         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
                         : theme === "dark"
                           ? "text-gray-300 hover:text-white"
                           : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     Student
                   </button>
                   <button
                     onClick={() => setFormData({ ...formData, role: "tutor" })}
-                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${
-                      role === "tutor"
+                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${role === "tutor"
                         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
                         : theme === "dark"
                           ? "text-gray-300 hover:text-white"
                           : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     Teacher
                   </button>
@@ -258,13 +288,11 @@ const SignupPage=()=> {
                         name="name"
                         value={name}
                         onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                          formErrors.name ? "border-red-500" : ""
-                        }`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.name ? "border-red-500" : ""
+                          }`}
                         placeholder="Enter your full name"
                       />
                       {formErrors.name && <p className="absolute text-red-500 text-xs mt-1">{formErrors.name}</p>}
@@ -288,13 +316,11 @@ const SignupPage=()=> {
                         name="email"
                         value={email}
                         onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                          formErrors.email ? "border-red-500" : ""
-                        }`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.email ? "border-red-500" : ""
+                          }`}
                         placeholder="Enter your email"
                       />
                       {formErrors.email && <p className="absolute text-red-500 text-xs mt-1">{formErrors.email}</p>}
@@ -318,13 +344,11 @@ const SignupPage=()=> {
                         name="password"
                         value={password}
                         onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                          formErrors.password ? "border-red-500" : ""
-                        }`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.password ? "border-red-500" : ""
+                          }`}
                         placeholder="Create a password"
                       />
                       {formErrors.password && (
@@ -350,13 +374,11 @@ const SignupPage=()=> {
                         name="password2"
                         value={password2}
                         onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                          formErrors.password2 ? "border-red-500" : ""
-                        }`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.password2 ? "border-red-500" : ""
+                          }`}
                         placeholder="Confirm your password"
                       />
                       {formErrors.password2 && (
@@ -382,13 +404,11 @@ const SignupPage=()=> {
                         name="country"
                         value={country}
                         onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                          formErrors.country ? "border-red-500" : ""
-                        }`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.country ? "border-red-500" : ""
+                          }`}
                         placeholder="Enter your country"
                       />
                       {formErrors.country && <p className="absolute text-red-500 text-xs mt-1">{formErrors.country}</p>}
@@ -412,11 +432,10 @@ const SignupPage=()=> {
                         value={bio}
                         onChange={onChange}
                         rows="3"
-                        className={`w-full pl-10 pr-3 py-2 ${
-                          theme === "dark"
+                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
                             ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                             : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         placeholder="Tell us about yourself"
                       ></textarea>
                     </div>
@@ -446,24 +465,21 @@ const SignupPage=()=> {
                               name="learningGoals"
                               value={goal}
                               onChange={(e) => onStudentChange(e, index)}
-                              className={`flex-grow pl-3 pr-3 py-2 ${
-                                theme === "dark"
+                              className={`flex-grow pl-3 pr-3 py-2 ${theme === "dark"
                                   ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                                   : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                              } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                                } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                               placeholder="Enter a learning goal"
                             />
                             <button
                               type="button"
                               onClick={() => removeStudentField("learningGoals", index)}
                               disabled={studentData.learningGoals.length === 1}
-                              className={`px-3 ${
-                                theme === "dark"
+                              className={`px-3 ${theme === "dark"
                                   ? "bg-gray-600 hover:bg-gray-500 text-white border-gray-600"
                                   : "bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300"
-                              } rounded-r-lg border border-l-0 ${
-                                studentData.learningGoals.length === 1 ? "opacity-50 cursor-not-allowed" : ""
-                              }`}
+                                } rounded-r-lg border border-l-0 ${studentData.learningGoals.length === 1 ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
                             >
                               <Minus className="h-5 w-5" />
                             </button>
@@ -472,9 +488,8 @@ const SignupPage=()=> {
                         <button
                           type="button"
                           onClick={() => addStudentField("learningGoals")}
-                          className={`mt-2 flex items-center text-sm ${
-                            theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
-                          }`}
+                          className={`mt-2 flex items-center text-sm ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+                            }`}
                         >
                           <Plus className="h-4 w-4 mr-1" /> Add Learning Goal
                         </button>
@@ -493,24 +508,21 @@ const SignupPage=()=> {
                               name="preferredSubjects"
                               value={subject}
                               onChange={(e) => onStudentChange(e, index)}
-                              className={`flex-grow pl-3 pr-3 py-2 ${
-                                theme === "dark"
+                              className={`flex-grow pl-3 pr-3 py-2 ${theme === "dark"
                                   ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                                   : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                              } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                                } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                               placeholder="Enter a preferred subject"
                             />
                             <button
                               type="button"
                               onClick={() => removeStudentField("preferredSubjects", index)}
                               disabled={studentData.preferredSubjects.length === 1}
-                              className={`px-3 ${
-                                theme === "dark"
+                              className={`px-3 ${theme === "dark"
                                   ? "bg-gray-600 hover:bg-gray-500 text-white border-gray-600"
                                   : "bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300"
-                              } rounded-r-lg border border-l-0 ${
-                                studentData.preferredSubjects.length === 1 ? "opacity-50 cursor-not-allowed" : ""
-                              }`}
+                                } rounded-r-lg border border-l-0 ${studentData.preferredSubjects.length === 1 ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
                             >
                               <Minus className="h-5 w-5" />
                             </button>
@@ -519,9 +531,8 @@ const SignupPage=()=> {
                         <button
                           type="button"
                           onClick={() => addStudentField("preferredSubjects")}
-                          className={`mt-2 flex items-center text-sm ${
-                            theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
-                          }`}
+                          className={`mt-2 flex items-center text-sm ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+                            }`}
                         >
                           <Plus className="h-4 w-4 mr-1" /> Add Preferred Subject
                         </button>
@@ -552,26 +563,22 @@ const SignupPage=()=> {
                               name="expertise"
                               value={exp}
                               onChange={(e) => onTutorChange(e, index)}
-                              className={`flex-grow pl-3 pr-3 py-2 ${
-                                theme === "dark"
+                              className={`flex-grow pl-3 pr-3 py-2 ${theme === "dark"
                                   ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                                   : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                              } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                                formErrors.expertise ? "border-red-500" : ""
-                              }`}
+                                } rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.expertise ? "border-red-500" : ""
+                                }`}
                               placeholder="Enter a subject you teach"
                             />
                             <button
                               type="button"
                               onClick={() => removeTutorField("expertise", index)}
                               disabled={tutorData.expertise.length === 1}
-                              className={`px-3 ${
-                                theme === "dark"
+                              className={`px-3 ${theme === "dark"
                                   ? "bg-gray-600 hover:bg-gray-500 text-white border-gray-600"
                                   : "bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300"
-                              } rounded-r-lg border border-l-0 ${
-                                tutorData.expertise.length === 1 ? "opacity-50 cursor-not-allowed" : ""
-                              }`}
+                                } rounded-r-lg border border-l-0 ${tutorData.expertise.length === 1 ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
                             >
                               <Minus className="h-5 w-5" />
                             </button>
@@ -581,9 +588,8 @@ const SignupPage=()=> {
                         <button
                           type="button"
                           onClick={() => addTutorField("expertise")}
-                          className={`mt-2 flex items-center text-sm ${
-                            theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
-                          }`}
+                          className={`mt-2 flex items-center text-sm ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+                            }`}
                         >
                           <Plus className="h-4 w-4 mr-1" /> Add Expertise
                         </button>
@@ -603,11 +609,10 @@ const SignupPage=()=> {
                           value={tutorData.hourlyRate}
                           onChange={(e) => onTutorChange(e)}
                           min="0"
-                          className={`w-full pl-3 pr-3 py-2 ${
-                            theme === "dark"
+                          className={`w-full pl-3 pr-3 py-2 ${theme === "dark"
                               ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                               : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                            } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         />
                       </div>
 
@@ -624,13 +629,11 @@ const SignupPage=()=> {
                           name="education"
                           value={tutorData.education}
                           onChange={(e) => onTutorChange(e)}
-                          className={`w-full pl-3 pr-3 py-2 ${
-                            theme === "dark"
+                          className={`w-full pl-3 pr-3 py-2 ${theme === "dark"
                               ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                               : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-                            formErrors.education ? "border-red-500" : ""
-                          }`}
+                            } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.education ? "border-red-500" : ""
+                            }`}
                           placeholder="Enter your educational background"
                         />
                         {formErrors.education && <p className="text-red-500 text-xs mt-1">{formErrors.education}</p>}
@@ -650,11 +653,10 @@ const SignupPage=()=> {
                           value={tutorData.experience}
                           onChange={(e) => onTutorChange(e)}
                           min="0"
-                          className={`w-full pl-3 pr-3 py-2 ${
-                            theme === "dark"
+                          className={`w-full pl-3 pr-3 py-2 ${theme === "dark"
                               ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
                               : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                            } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         />
                       </div>
                     </div>

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('./User.model');
+import mongoose from 'mongoose';
+import User from './User.model.js';
 
 const TutorSchema = new mongoose.Schema({
   expertise: {
@@ -65,4 +65,5 @@ TutorSchema.virtual('reviews', {
   justOne: false
 });
 
-module.exports = User.discriminator('Tutor', TutorSchema);
+const Tutor= User.discriminator('Tutor', TutorSchema);
+export default Tutor

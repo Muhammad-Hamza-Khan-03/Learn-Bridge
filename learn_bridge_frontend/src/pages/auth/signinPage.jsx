@@ -43,7 +43,7 @@ export default function SignInPage() {
 
   const { email, password } = formData
 
-  const AUTH_BASE = "http://localhost:5000/api/v1/auth"
+  const AUTH_BASE = "http://localhost:5000/api/auth"
 
   // Add useEffect for redirection
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function SignInPage() {
     dispatch(loginStart())
 
     try {
-      const res = await fetch(`${AUTH_BASE}/login`, {
+      const res = await fetch(`${AUTH_BASE}/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

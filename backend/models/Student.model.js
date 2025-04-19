@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('./User.model');
+import mongoose from 'mongoose';
+import User from './User.model.js';
 
 const StudentSchema = new mongoose.Schema({
   learningGoals: {
@@ -38,4 +38,5 @@ const StudentSchema = new mongoose.Schema({
   }]
 });
 
-module.exports = User.discriminator('Student', StudentSchema);
+const Student = User.discriminator('Student', StudentSchema);
+export default Student

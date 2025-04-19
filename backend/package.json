@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "MERN stack Educational tutor and student application ",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",

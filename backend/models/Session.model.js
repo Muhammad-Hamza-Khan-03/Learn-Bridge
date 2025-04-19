@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-
+import mongoose from "mongoose"
 const SessionSchema = new mongoose.Schema({
   student: {
     type: mongoose.Schema.Types.ObjectId,
@@ -56,4 +55,5 @@ SessionSchema.virtual('messages', {
   justOne: false
 });
 
-module.exports = mongoose.model('Session', SessionSchema);
+const Session = mongoose.model('Session', SessionSchema);
+export default Session

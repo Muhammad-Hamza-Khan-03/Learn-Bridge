@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-
+import mongoose from "mongoose"
 const CourseSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -85,4 +84,5 @@ CourseSchema.index({ subject: 1, level: 1 });
 CourseSchema.index({ tutor: 1 });
 CourseSchema.index({ startDate: 1 });
 
-module.exports = mongoose.model('Course', CourseSchema);
+const Course = mongoose.model('Course', CourseSchema);
+export default Course

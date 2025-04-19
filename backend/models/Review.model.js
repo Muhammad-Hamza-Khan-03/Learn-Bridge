@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose"
 
 const ReviewSchema = new mongoose.Schema({
   student: {
@@ -77,4 +77,5 @@ ReviewSchema.post('remove', function() {
   this.constructor.getAverageRating(this.tutor);
 });
 
-module.exports = mongoose.model('Review', ReviewSchema);
+const Review = mongoose.model('Review', ReviewSchema);
+export default Review
