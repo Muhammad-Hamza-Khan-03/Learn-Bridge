@@ -1,14 +1,8 @@
-import { useState } from 'react'
-import './App.css'
+import React from 'react'
+import AppWithTheme from './components/page-components/LandingPage'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      
-    </>
+    <AppWithTheme />
   )
 }
-
-export default App

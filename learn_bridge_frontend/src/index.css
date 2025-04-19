@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+  
+    body {
+      @apply antialiased;
+    }
+  
+    /* Smooth transitions for theme changes */
+    * {
+      @apply transition-colors duration-200;
+    }
+  }
