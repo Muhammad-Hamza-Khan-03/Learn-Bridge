@@ -1,18 +1,9 @@
 import { useState, useEffect } from "react"
-import { useSelector, useDispatch } from "react-redux"
 import { Link } from "react-router-dom"
 import { SearchIcon, Filter, BookOpen, X, Star, MapPin, Clock, Award } from "lucide-react"
-import { setTutors, setLoading, setError } from "../../redux/slices/UserSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { mockApi } from "../../mock/mockApi"
 
-const BASE_URL = "https://api.example.com"
-
-// API endpoints
-export const API_URLS = {
-  AUTH: `${BASE_URL}/auth`,
-  USERS: `${BASE_URL}/users`,
-  SESSIONS: `${BASE_URL}/sessions`,
-  COURSES: `${BASE_URL}/courses`,
-}
 const Search = () => {
   const dispatch = useDispatch()
   const { tutors, isLoading, error } = useSelector((state) => state.users)
@@ -34,20 +25,12 @@ const Search = () => {
     const fetchTutors = async () => {
       dispatch(setLoading())
       try {
-        const response = await fetch(`${API_URLS.USERS}/tutors/search`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch tutors")
-        }
-
-        const data = await response.json()
-        dispatch(setTutors(data.data))
+        console.log("Fetching tutors from mock API")
+        const data = await mockApi.users.getTutors()
+        dispatch(setTutors(data.data || []))
       } catch (error) {
-        dispatch(setError(error.message))
+        console.error("Error fetching tutors:", error)
+        dispatch(setError(error.message || "An error occurred while fetching tutors"))
       }
     }
 

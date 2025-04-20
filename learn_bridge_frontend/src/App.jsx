@@ -14,6 +14,7 @@ import SessionReview from '../src/pages/student/SessionReview'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Sidebar from '../src/components/page-components/Sidebar'
+import { Navigate } from 'react-router-dom'
 
 import { ToastProvider } from './components/ui/toastContextProvider'
 export default function App() {
@@ -28,8 +29,8 @@ export default function App() {
       <ToastProvider>
       <div className="flex h-screen bg-gray-50">
       {!hideSidebar && <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />}
-      <div className="flex-1 overflow-auto">
-        <main className="p-6 md:p-8">
+      {/* <div className="flex-1 overflow-auto"> */}
+        {/* <main className="p-6 md:p-8"> */}
     <Routes>
       <Route path="/" element={<AppWithTheme />} />
       <Route path="/signup" element={<SignupPage/>}/>
@@ -41,9 +42,10 @@ export default function App() {
             <Route path="/meetings" element={<Meetings />} />
             <Route path="/schedule/:tutorId" element={<ScheduleSession />} />
             <Route path="/review/:sessionId" element={<SessionReview />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    </main>
-    </div>
+    {/* </main> */}
+    {/* </div> */}
     </div>
     </ToastProvider>
 

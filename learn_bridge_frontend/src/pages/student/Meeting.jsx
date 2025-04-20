@@ -11,16 +11,7 @@ import {
   setError,
   updateSession,
 } from "../../redux/slices/SessionSlice"
-
-const BASE_URL = "https://api.example.com"
-
-// API endpoints
-export const API_URLS = {
-  AUTH: `${BASE_URL}/auth`,
-  USERS: `${BASE_URL}/users`,
-  SESSIONS: `${BASE_URL}/sessions`,
-  COURSES: `${BASE_URL}/courses`,
-}
+import { mockApi } from "../../mock/mockApi"
 
 const Meetings = () => {
   const dispatch = useDispatch()
@@ -38,35 +29,18 @@ const Meetings = () => {
       try {
         dispatch(setLoading())
 
-        // Fetch upcoming sessions
-        const upcomingResponse = await fetch(`${API_URLS.SESSIONS}/upcoming`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
+        // Fetch upcoming sessions using mock API
+        console.log("Fetching upcoming sessions from mock API")
+        const upcomingData = await mockApi.sessions.getUpcomingSessions()
+        dispatch(setUpcomingSessions(upcomingData.data || []))
 
-        if (!upcomingResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
-
-        const upcomingData = await upcomingResponse.json()
-        dispatch(setUpcomingSessions(upcomingData.data))
-
-        // Fetch session history
-        const historyResponse = await fetch(`${API_URLS.SESSIONS}/history`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!historyResponse.ok) {
-          throw new Error("Failed to fetch session history")
-        }
-
-        const historyData = await historyResponse.json()
-        dispatch(setSessionHistory(historyData.data))
+        // Fetch session history using mock API
+        console.log("Fetching session history from mock API")
+        const historyData = await mockApi.sessions.getSessionHistory()
+        dispatch(setSessionHistory(historyData.data || []))
       } catch (error) {
-        dispatch(setError(error.message))
+        console.error("Error fetching sessions:", error)
+        dispatch(setError(error.message || "An error occurred while fetching sessions"))
         setLocalError("Failed to load your sessions. Please try again.")
       } finally {
         setIsRefreshing(false)
@@ -82,31 +56,11 @@ const Meetings = () => {
       setIsRefreshing(true)
       try {
         // Fetch upcoming sessions
-        const upcomingResponse = await fetch(`${API_URLS.SESSIONS}/upcoming`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!upcomingResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
-
-        const upcomingData = await upcomingResponse.json()
+        const upcomingData = await mockApi.sessions.getUpcomingSessions()
         dispatch(setUpcomingSessions(upcomingData.data))
 
         // Fetch session history
-        const historyResponse = await fetch(`${API_URLS.SESSIONS}/history`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!historyResponse.ok) {
-          throw new Error("Failed to fetch session history")
-        }
-
-        const historyData = await historyResponse.json()
+        const historyData = await mockApi.sessions.getSessionHistory()
         dispatch(setSessionHistory(historyData.data))
       } catch (error) {
         setLocalError("Failed to refresh sessions. Please try again.")
@@ -121,20 +75,8 @@ const Meetings = () => {
   const handleStatusChange = async (sessionId, status) => {
     setStatusUpdating(sessionId)
     try {
-      const response = await fetch(`${API_URLS.SESSIONS}/${sessionId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ status }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update session status")
-      }
-
-      const data = await response.json()
+      // Update session status using mock API
+      const data = await mockApi.sessions.updateSession(sessionId, { status })
       dispatch(updateSession(data.data))
       handleRefresh() // Refresh the sessions after status update
     } catch (error) {

@@ -8,16 +8,7 @@ import CourseProgressCard from "../../components/page-components/CourseProgressC
 import UpcomingSessionCard from "../../components/page-components/UpcomingSessionCard"
 import { setUpcomingSessions, setError, setLoading } from "../../redux/slices/SessionSlice"
 import { setStudentCourses } from "../../redux/slices/courseSlice"
-
-const BASE_URL = "https://api.example.com"
-
-// API endpoints
-export const API_URLS = {
-  AUTH: `${BASE_URL}/auth`,
-  USERS: `${BASE_URL}/users`,
-  SESSIONS: `${BASE_URL}/sessions`,
-  COURSES: `${BASE_URL}/courses`,
-}
+import { mockApi } from "../../mock/mockApi"
 
 const Dashboard = () => {
   const dispatch = useDispatch()
@@ -30,36 +21,20 @@ const Dashboard = () => {
     const fetchData = async () => {
       setIsLoadingData(true)
       try {
-        // Fetch upcoming sessions
+        // Fetch upcoming sessions using mock API
         dispatch(setLoading())
-        const sessionsResponse = await fetch(`${API_URLS.SESSIONS}/upcoming`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
+        console.log("Fetching upcoming sessions from mock API")
 
-        if (!sessionsResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
+        const sessionsData = await mockApi.sessions.getUpcomingSessions()
+        dispatch(setUpcomingSessions(sessionsData.data || []))
 
-        const sessionsData = await sessionsResponse.json()
-        dispatch(setUpcomingSessions(sessionsData.data))
-
-        // Fetch student courses
-        const coursesResponse = await fetch(`${API_URLS.COURSES}/student/enrolled`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!coursesResponse.ok) {
-          throw new Error("Failed to fetch student courses")
-        }
-
-        const coursesData = await coursesResponse.json()
-        dispatch(setStudentCourses(coursesData.data))
+        // Fetch student courses using mock API
+        console.log("Fetching student courses from mock API")
+        const coursesData = await mockApi.courses.getStudentCourses()
+        dispatch(setStudentCourses(coursesData.data || []))
       } catch (error) {
-        dispatch(setError(error.message))
+        console.error("Error fetching data:", error)
+        dispatch(setError(error.message || "An error occurred while fetching data"))
       } finally {
         setIsLoadingData(false)
       }
