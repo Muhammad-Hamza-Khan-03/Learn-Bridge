@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router"
+import { Link, Navigate, useNavigate } from "react-router"
 import { useSelector, useDispatch } from "react-redux"
 import {
   loginStart,
@@ -20,9 +20,23 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [formErrors, setFormErrors] = useState({})
 
+  useEffect(() => {
+    console.log("[SignInModal] Auth State ->", {
+      user,
+      isAuthenticated,
+      isLoading,
+      error,
+    })
+  }, [user, isAuthenticated, isLoading, error])
+   // Clear errors on open/close
+   useEffect(() => {
+    dispatch(resetError())
+    return () => { dispatch(resetError()) }
+  }, [dispatch, isModalOpen])
+
   // On successful login, close modal & redirect
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user?.role) {
       setIsModalOpen(false)
       const dest =
         user.role === "student"
@@ -32,7 +46,9 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
           : user.role === "admin"
           ? "/admin/dashboard"
           : "/"
-      navigate(dest, { replace: true })
+
+          console.log("[SignInModal] Redirecting to", dest)
+      return <Navigate to={dest} replace/>
     }
   }, [isAuthenticated, user, navigate, setIsModalOpen])
 
@@ -63,33 +79,32 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
     try {
       const res = await fetch(`${AUTH_BASE}/signin`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
       const payload = await res.json()
 
       if (!res.ok) {
-        // handle HTTP errors
         const msg = payload.error || payload.message || "Login failed"
         dispatch(loginFailure(msg))
         return
       }
 
-      // on success
-      const { token, data: userData } = payload
+      // Expect backend to return both token and user object
+      const { token, user: userData } = payload
+      if (!userData) {
+        throw new Error("Server did not return user data.")
+      }
+
       localStorage.setItem("token", token)
       dispatch(loginSuccess({ token, user: userData }))
     } catch (err) {
-      // network or unexpected error
       dispatch(loginFailure(err.message || "Something went wrong"))
     }
   }
 
   if (!isModalOpen) return null
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -239,6 +254,10 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
             >
               Don't have an account?
             </span>{" "}
+            {error && (
+          <ErrorAlert error={error} onDismiss={() => dispatch(resetError())} />
+        )}
+
             <Link to="/signup" className="text-blue-400 hover:text-blue-300">
               Sign up
             </Link>

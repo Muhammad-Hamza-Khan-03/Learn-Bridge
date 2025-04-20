@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link } from "react-router"
+import { useState,useEffect } from "react"
+
 import {
   BookOpen,
   ArrowRight,
@@ -14,9 +14,10 @@ import {
   Sun,
   Moon,
 } from "lucide-react"
-import {useDispatch} from "react-redux"
+import {useDispatch,useSelector} from "react-redux"
 import { useTheme } from "../../components/ui/theme-context"
-import { registerUser } from "../../redux/slices/authSlice"
+import { registerUser, resetError,loginSuccess } from "../../redux/slices/authSlice"
+import { Link, useNavigate } from "react-router"
 const SignupPage = () => {
 
   const AUTH_BASE = "http://localhost:5000/api/auth"
@@ -44,11 +45,35 @@ const SignupPage = () => {
   })
 
   const [formErrors, setFormErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [ispageLoading, setIspageLoading] = useState(false)
   const { theme, toggleTheme } = useTheme()
-
+const navigate = useNavigate();
   const { name, email, password, password2, role, country, bio } = formData
   const dispatch = useDispatch()
+  const { user, isAuthenticated, error, isLoading ,token} = useSelector((state) => state.auth)
+
+  
+  // Redirect the user 
+  useEffect(() => {
+  // only run once auth flips to true and we actually have a role
+  if (isAuthenticated && user && user.role) {
+    console.log("redirecting:", user.role);
+    switch (user.role) {
+      case "student":
+        navigate("/student/landing");
+        break;
+      case "tutor":
+        navigate("/tutor/landing");
+        break;
+      case "admin":
+        navigate("/admin/dashboard");
+        break;
+      default:
+        navigate("/");
+    }
+  }
+  return () => { dispatch(resetError()) }
+}, [isAuthenticated, user, navigate,dispatch]);
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -137,16 +162,16 @@ const SignupPage = () => {
   
     if (!validateForm()) return
   
-    setIsLoading(true)
+    setIspageLoading(true)
   
     // todo: admin role ifff
     const commonData = {
       ...formData,
       ...(role === "student" ? studentData : {}),
       ...(role === "tutor" ? tutorData : {}),
-     
-      
+    
     }
+    delete commonData.password2
   
     try {
       const response = await fetch(`${AUTH_BASE}/signup`, {
@@ -162,15 +187,21 @@ const SignupPage = () => {
       if (!response.ok) {
         throw new Error(data.error || "Signup failed")
       }
-  
+  console.log("signup response:", data);
       // Save to Redux store
-      dispatch(registerUser(data.user)) 
+      // dispatch(registerUser(data)) 
+      // localStorage.setItem("token", data.token)
+      
+      localStorage.setItem("token", data.token)
+
+      dispatch(loginSuccess({ user: data.user, token: data.token }))
+      
       alert("Registration successful!")
     } catch (err) {
       console.error("Signup error:", err)
       alert(err.message)
     } finally {
-      setIsLoading(false)
+      setIspageLoading(false)
     }
   }
 
@@ -666,10 +697,10 @@ const SignupPage = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={ispageLoading}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center"
                 >
-                  {isLoading ? (
+                  {ispageLoading ? (
                     <>
                       <svg
                         className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
