@@ -1,3 +1,4 @@
+// learn_bridge_frontend/src/redux/slices/UserSlice.js
 import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {

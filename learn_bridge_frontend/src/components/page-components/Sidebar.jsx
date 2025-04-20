@@ -4,12 +4,12 @@ import { Home, BookOpen, Search, Video, Calendar, Star, LogOut, Settings, Menu, 
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navItems = [
-    { name: "Dashboard", icon: Home, path: "/" },
+    { name: "Dashboard", icon: Home, path: "/dashboard" },
     { name: "Courses", icon: BookOpen, path: "/courses" },
     { name: "Search", icon: Search, path: "/search" },
     { name: "Meetings", icon: Video, path: "/meetings" },
-    { name: "Scheduling", icon: Calendar, path: "/scheduling" },
-    { name: "Reviews", icon: Star, path: "/reviews" },
+    // { name: "Scheduling", icon: Calendar, path: "/scheduling" },
+    // { name: "Reviews", icon: Star, path: "/reviews" },
   ]
 
   return (
@@ -24,15 +24,23 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0`}
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-indigo-600">EduConnect</h1>
+            <h1 className="text-xl font-bold text-indigo-600">LearnBridge</h1>
           </div>
+
+          {/* Close button (mobile only) */}
+          <button
+            className="absolute top-4 right-4 md:hidden text-gray-500 hover:text-gray-700"
+            onClick={() => setIsOpen(false)}
+          >
+            <X size={20} />
+          </button>
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -45,6 +53,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     isActive ? "bg-indigo-50 text-indigo-600" : "hover:bg-gray-100"
                   }`
                 }
+                onClick={() => window.innerWidth < 768 && setIsOpen(false)}
               >
                 <item.icon className="w-5 h-5 mr-3" />
                 <span className="font-medium">{item.name}</span>
@@ -66,7 +75,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 <Settings className="w-5 h-5 mr-3" />
                 <span className="font-medium">Settings</span>
               </button>
-              <button className="flex items-center w-full px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <button 
+                className="flex items-center w-full px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                onClick={() => {
+                  // Clear token from localStorage
+                  localStorage.removeItem("token");
+                  // Redirect to home page
+                  window.location.href = "/";
+                }}
+              >
                 <LogOut className="w-5 h-5 mr-3" />
                 <span className="font-medium">Logout</span>
               </button>
@@ -74,6 +91,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
       </div>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
     </>
   )
 }

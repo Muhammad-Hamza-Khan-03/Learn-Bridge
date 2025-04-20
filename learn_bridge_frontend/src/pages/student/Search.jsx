@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { SearchIcon, Filter, BookOpen, X, Star, MapPin, Clock, Award } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { mockApi } from "../../mock/mockApi"
+import { setTutors, setLoading, setError } from "../../redux/slices/UserSlice"
 
 const Search = () => {
   const dispatch = useDispatch()
