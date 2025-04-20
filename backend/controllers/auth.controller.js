@@ -168,13 +168,13 @@ export const signin = async (req, res) => {
       if (process.env.NODE_ENV === 'production') {
         options.secure = true;
       }
-  
       res
         .status(200)
         .cookie('token', token, options)
         .json({
           success: true,
-          token
+          token,
+          user:user
         });
     } catch (err) {
       console.error('Login error:', err);

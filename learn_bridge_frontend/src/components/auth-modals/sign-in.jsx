@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, Navigate, useNavigate } from "react-router"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import {
   loginStart,
@@ -9,14 +9,16 @@ import {
 } from "../../redux/slices/authSlice"
 import ErrorAlert from "../ui/Error-Alert"
 import { X, BookOpen } from "lucide-react"
+import { useToastContext
 
+ } from "../ui/toastContextProvider"
 const AUTH_BASE = "http://localhost:5000/api/auth"
 
 export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { user, isAuthenticated, isLoading, error } = useSelector((s) => s.auth)
-
+  const { addToast } = useToastContext();
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [formErrors, setFormErrors] = useState({})
 
@@ -37,20 +39,21 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
   // On successful login, close modal & redirect
   useEffect(() => {
     if (isAuthenticated && user?.role) {
-      setIsModalOpen(false)
-      const dest =
-        user.role === "student"
-          ? "/student/dashboard"
-          : ["tutor", "teacher"].includes(user.role)
-          ? "/tutor/dashboard"
-          : user.role === "admin"
-          ? "/admin/dashboard"
-          : "/"
-
-          console.log("[SignInModal] Redirecting to", dest)
-      return <Navigate to={dest} replace/>
+      setIsModalOpen(false);
+      let dest;  
+      if(user.role === "student")
+          dest = "/student/dashboard"
+      else if (user.role === "tutor") 
+        dest =  "/tutor/dashboard"
+      else if(user.role === "admin")
+        dest = "/admin/dashboard"
+      else{
+        dest = "/";
+      }
+      
+      navigate(dest);
     }
-  }, [isAuthenticated, user, navigate, setIsModalOpen])
+  }, [isAuthenticated, user, navigate, setIsModalOpen]);
 
   const validate = () => {
     const errs = {}
@@ -70,39 +73,45 @@ export default function SignInModal({ isModalOpen, setIsModalOpen, theme }) {
     if (error) dispatch(resetError())
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validate()) return
+ // In sign-in.jsx (modal component)
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    dispatch(loginStart())
+  dispatch(loginStart());
 
-    try {
-      const res = await fetch(`${AUTH_BASE}/signin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
+  try {
+    const res = await fetch(`${AUTH_BASE}/signin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+      credentials: "include",
+    });
 
-      const payload = await res.json()
+    const payload = await res.json();
 
-      if (!res.ok) {
-        const msg = payload.error || payload.message || "Login failed"
-        dispatch(loginFailure(msg))
-        return
-      }
-
-      // Expect backend to return both token and user object
-      const { token, user: userData } = payload
-      if (!userData) {
-        throw new Error("Server did not return user data.")
-      }
-
-      localStorage.setItem("token", token)
-      dispatch(loginSuccess({ token, user: userData }))
-    } catch (err) {
-      dispatch(loginFailure(err.message || "Something went wrong"))
+    if (!res.ok) {
+      const msg = payload.error || payload.message || "Login failed";
+      dispatch(loginFailure(msg));
+      addToast(msg, "error");
+      return;
     }
+
+    // Store token and update Redux
+    localStorage.setItem("token", payload.token);
+    
+    dispatch(loginSuccess({ 
+      token: payload.token,
+      user:payload.user
+    }));
+    
+    addToast("Login successful!", "success");
+    setIsModalOpen(false);
+  } catch (err) {
+    dispatch(loginFailure(err.message || "Something went wrong"));
+    addToast(err.message || "Something went wrong", "error");
   }
+};
 
   if (!isModalOpen) return null
   return (

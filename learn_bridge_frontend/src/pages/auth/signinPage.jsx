@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { loginStart, loginSuccess, loginFailure, resetError } from "../../redux/slices/authSlice"
 import { BookOpen, ArrowRight, Mail, Lock, ChevronLeft, Sun, Moon, AlertCircle } from "lucide-react"
 import { useTheme } from "../../components/ui/theme-context"
-
+import { useToastContext } from "../../components/ui/toastContextProvider"
 // Add ErrorAlert component
 const ErrorAlert = ({ error, onDismiss }) => {
   const { theme } = useTheme()
@@ -44,22 +44,24 @@ export default function SignInPage() {
   const { email, password } = formData
 
   const AUTH_BASE = "http://localhost:5000/api/auth"
+  const { addToast } = useToastContext();
 
   // Add useEffect for redirection
   useEffect(() => {
-    // Redirect if already logged in
-    if (isAuthenticated && user) {
-      const redirectPath =
-        user.role === "student"
-          ? "/student/dashboard"
-          : user.role === "tutor"
-            ? "/tutor/dashboard"
-            : user.role === "admin"
-              ? "/admin/dashboard"
-              : "/"
+  // Redirect if already logged in
+  if (isAuthenticated && user) {
+    const redirectPath =
+      user.role === "student"
+        ? "/student/dashboard"
+        : user.role === "tutor"
+          ? "/tutor/dashboard"
+          : user.role === "admin"
+            ? "/admin/dashboard"
+            : "/";
 
-      navigate(redirectPath, { replace: true })
-    }
+    navigate(redirectPath);
+  }
+
 
     // Reset errors when component unmounts
     return () => {
@@ -100,12 +102,12 @@ export default function SignInPage() {
   }
 
   const onSubmit = async (e) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
-    dispatch(loginStart())
-
+    e.preventDefault();
+  
+    if (!validateForm()) return;
+  
+    dispatch(loginStart());
+  
     try {
       const res = await fetch(`${AUTH_BASE}/signin`, {
         method: "POST",
@@ -113,26 +115,32 @@ export default function SignInPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
-
-      const payload = await res.json()
-
+        credentials: "include",
+      });
+  
+      const payload = await res.json();
+  
       if (!res.ok) {
-        // handle HTTP errors
-        const msg = payload.error || payload.message || "Login failed"
-        dispatch(loginFailure(msg))
-        return
+        const msg = payload.error || payload.message || "Login failed";
+        dispatch(loginFailure(msg));
+        addToast(msg, "error");
+        return;
       }
-
-      // on success
-      const { token, data: userData } = payload
-      localStorage.setItem("token", token)
-      dispatch(loginSuccess({ token, user: userData }))
+  
+      // Success - save token and update Redux store
+      localStorage.setItem("token", payload.token);
+      
+      dispatch(loginSuccess({ 
+        token: payload.token, 
+        user: payload.user
+      }));
+      
+      addToast("Login successful!", "success");
     } catch (err) {
-      // network or unexpected error
-      dispatch(loginFailure(err.message || "Something went wrong"))
+      dispatch(loginFailure(err.message || "Something went wrong"));
+      addToast(err.message || "Something went wrong", "error");
     }
-  }
+  };
 
   const handleDismissError = () => {
     dispatch(resetError())

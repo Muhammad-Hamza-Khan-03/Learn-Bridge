@@ -16,8 +16,9 @@ import {
 } from "lucide-react"
 import {useDispatch,useSelector} from "react-redux"
 import { useTheme } from "../../components/ui/theme-context"
-import { registerUser, resetError,loginSuccess } from "../../redux/slices/authSlice"
-import { Link, useNavigate } from "react-router"
+import { resetError,loginSuccess } from "../../redux/slices/authSlice"
+import { Link, useNavigate } from "react-router-dom"
+import { useToastContext } from "../../components/ui/toastContextProvider"
 const SignupPage = () => {
 
   const AUTH_BASE = "http://localhost:5000/api/auth"
@@ -43,7 +44,7 @@ const SignupPage = () => {
     education: "",
     experience: 0,
   })
-
+  const { addToast } = useToastContext()
   const [formErrors, setFormErrors] = useState({})
   const [ispageLoading, setIspageLoading] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -157,53 +158,52 @@ const navigate = useNavigate();
     return Object.keys(errors).length === 0
   }
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
-  
-    if (!validateForm()) return
-  
-    setIspageLoading(true)
-  
-    // todo: admin role ifff
-    const commonData = {
-      ...formData,
-      ...(role === "student" ? studentData : {}),
-      ...(role === "tutor" ? tutorData : {}),
-    
-    }
-    delete commonData.password2
-  
-    try {
-      const response = await fetch(`${AUTH_BASE}/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(commonData),
-      })
-  
-      const data = await response.json()
-  
-      if (!response.ok) {
-        throw new Error(data.error || "Signup failed")
-      }
-  console.log("signup response:", data);
-      // Save to Redux store
-      // dispatch(registerUser(data)) 
-      // localStorage.setItem("token", data.token)
-      
-      localStorage.setItem("token", data.token)
+ // In signupPage.jsx
+const onSubmit = async (e) => {
+  e.preventDefault();
 
-      dispatch(loginSuccess({ user: data.user, token: data.token }))
-      
-      alert("Registration successful!")
-    } catch (err) {
-      console.error("Signup error:", err)
-      alert(err.message)
-    } finally {
-      setIspageLoading(false)
+  if (!validateForm()) return;
+
+  setIspageLoading(true);
+
+  const commonData = {
+    ...formData,
+    ...(role === "student" ? studentData : {}),
+    ...(role === "tutor" ? tutorData : {}),
+  };
+  delete commonData.password2;
+
+  try {
+    const response = await fetch(`${AUTH_BASE}/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(commonData),
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Signup failed");
     }
+    
+    // Store token and user info in Redux
+    localStorage.setItem("token", data.token);
+    dispatch(loginSuccess({ 
+      token: data.token, 
+      user: data.user 
+    }));
+    
+    addToast("Registration successful!", "success");
+  } catch (err) {
+    console.error("Signup error:", err);
+    addToast(err.message, "error");
+  } finally {
+    setIspageLoading(false);
   }
+};
 
   return (
     <div
