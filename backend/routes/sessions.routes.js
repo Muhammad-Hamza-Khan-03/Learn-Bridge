@@ -26,5 +26,6 @@ SessionsRouter.get('/:id', getSession);
 SessionsRouter.put('/:id', authorize('tutor', 'admin'), updateSessionStatus);
 
 SessionsRouter.put('/:id/meeting-link', authorize('tutor', 'admin'), addMeetingLink);
+// SessionsRouter.put('/:id/meeting-link',addMeetingLink);
 
 export default SessionsRouter

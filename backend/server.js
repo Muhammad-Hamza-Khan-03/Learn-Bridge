@@ -17,13 +17,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.json());
 
-const corsOptions = {
+app.use(cors({
   origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors({corsOptions}))
+credentials:true
+}));
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
