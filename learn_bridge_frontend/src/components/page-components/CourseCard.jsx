@@ -69,7 +69,7 @@ const CourseCard = ({ course, linkTo }) => {
         </div>
 
         <Link
-          to={linkTo || `/course/${course.id}`}
+          to={linkTo || `/student/course/${course.id}`}
           className={`block w-full text-center py-2 rounded-lg font-medium transition-colors ${
             course.enrolled
               ? "bg-emerald-600 text-white hover:bg-emerald-700"

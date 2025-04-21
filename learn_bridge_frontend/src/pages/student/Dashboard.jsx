@@ -97,7 +97,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-800">Upcoming Sessions</h2>
             <Link
-              to="/meetings"
+              to="/student/meetings"
               className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-700 transition-colors"
             >
               View All <ChevronRight className="w-4 h-4 ml-1" />
@@ -127,7 +127,7 @@ const Dashboard = () => {
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">No upcoming sessions</p>
                 <Link
-                  to="/search"
+                  to="/student/search"
                   className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
                 >
                   Find Tutors
@@ -149,7 +149,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-800">My Courses</h2>
           <Link
-            to="/courses"
+            to="/student/catalog"
             className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-700 transition-colors"
           >
             View All Courses <ChevronRight className="w-4 h-4 ml-1" />
@@ -179,7 +179,7 @@ const Dashboard = () => {
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">You haven't enrolled in any courses yet</p>
             <Link
-              to="/courses"
+              to="/student/catalog"
               className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
               Browse Courses
@@ -193,21 +193,21 @@ const Dashboard = () => {
         <h2 className="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
-            to="/search"
+            to="/student/search"
             className="bg-indigo-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
           >
             <Search className="w-5 h-5 mr-2" />
             Find Tutors
           </Link>
           <Link
-            to="/courses"
+            to="/student/catalog"
             className="bg-emerald-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
           >
             <BookOpen className="w-5 h-5 mr-2" />
             Browse Courses
           </Link>
           <Link
-            to="/meetings"
+            to="/student/meetings"
             className="bg-blue-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
           >
             <Calendar className="w-5 h-5 mr-2" />

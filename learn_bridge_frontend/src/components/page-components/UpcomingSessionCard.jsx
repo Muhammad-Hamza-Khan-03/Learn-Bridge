@@ -53,7 +53,7 @@ const UpcomingSessionCard = ({ session }) => {
           </Link>
         ) : session.status === "pending" ? (
           <Link
-            to={`/meetings`}
+            to={`/student/meetings`}
             className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
           >
             <Calendar className="w-4 h-4 mr-2" />
@@ -61,7 +61,7 @@ const UpcomingSessionCard = ({ session }) => {
           </Link>
         ) : (
           <Link
-            to={`/meetings`}
+            to={`/student/meetings`}
             className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
           >
             <Calendar className="w-4 h-4 mr-2" />

@@ -19,6 +19,7 @@ import { useTheme } from "../../components/ui/theme-context"
 import { resetError,loginSuccess } from "../../redux/slices/authSlice"
 import { Link, useNavigate } from "react-router-dom"
 import { useToastContext } from "../../components/ui/toastContextProvider"
+import { getCountryNames } from "../../mock/places"
 const SignupPage = () => {
 
   const AUTH_BASE = "http://localhost:5000/api/auth"
@@ -33,17 +34,20 @@ const SignupPage = () => {
     bio: "",
   })
 
-  const [studentData, setStudentData] = useState({
-    learningGoals: [""],
-    preferredSubjects: [""],
-  })
+const [studentData, setStudentData] = useState({
+  learningGoals: [""],
+  preferredSubjects: [""],
+  availability: [{ day: "Monday", startTime: "09:00", endTime: "17:00" }]
+})
 
-  const [tutorData, setTutorData] = useState({
-    expertise: [""],
-    hourlyRate: 0,
-    education: "",
-    experience: 0,
-  })
+const [tutorData, setTutorData] = useState({
+  expertise: [""],
+  hourlyRate: 0,
+  education: "",
+  experience: 0,
+  availability: [{ day: "Monday", startTime: "09:00", endTime: "17:00" }]
+})
+const [countryList] = useState(getCountryNames());
   const { addToast } = useToastContext()
   const [formErrors, setFormErrors] = useState({})
   const [ispageLoading, setIspageLoading] = useState(false)
@@ -147,8 +151,7 @@ const navigate = useNavigate();
       errors.password2 = "Passwords do not match"
     }
 
-    if (!country) errors.country = "Country is required"
-
+if (!country) errors.country = "Please select your country"
     if (role === "tutor") {
       if (!tutorData.education) errors.education = "Education is required"
       if (tutorData.expertise.some((item) => !item)) errors.expertise = "All expertise fields must be filled"
@@ -168,8 +171,22 @@ const onSubmit = async (e) => {
 
   const commonData = {
     ...formData,
-    ...(role === "student" ? studentData : {}),
-    ...(role === "tutor" ? tutorData : {}),
+    ...(role === "student" ? {
+      ...studentData,
+      availability: studentData.availability.map(slot => ({
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }))
+    } : {}),
+    ...(role === "tutor" ? {
+      ...tutorData,
+      availability: tutorData.availability.map(slot => ({
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }))
+    } : {})
   };
   delete commonData.password2;
 
@@ -202,6 +219,50 @@ const onSubmit = async (e) => {
     addToast(err.message, "error");
   } finally {
     setIspageLoading(false);
+  }
+};
+
+const handleAvailabilityChange = (role, index, field, value) => {
+  const stateUpdater = role === 'student' ? setStudentData : setTutorData;
+  const currentData = role === 'student' ? studentData : tutorData;
+  
+  const updated = [...currentData.availability];
+  updated[index] = {
+    ...updated[index],
+    [field]: value
+  };
+  
+  stateUpdater({
+    ...currentData,
+    availability: updated
+  });
+};
+
+const addAvailability = (role) => {
+  const stateUpdater = role === 'student' ? setStudentData : setTutorData;
+  const currentData = role === 'student' ? studentData : tutorData;
+  
+  stateUpdater({
+    ...currentData,
+    availability: [
+      ...currentData.availability,
+      { day: "Monday", startTime: "09:00", endTime: "17:00" }
+    ]
+  });
+};
+
+const removeAvailability = (role, index) => {
+  const stateUpdater = role === 'student' ? setStudentData : setTutorData;
+  const currentData = role === 'student' ? studentData : tutorData;
+  
+  if (currentData.availability.length > 1) {
+    const updated = [...currentData.availability];
+    updated.splice(index, 1);
+    
+    stateUpdater({
+      ...currentData,
+      availability: updated
+    });
   }
 };
 
@@ -419,32 +480,39 @@ const onSubmit = async (e) => {
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="country"
-                      className={`block text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"} mb-1`}
-                    >
-                      Country
-                    </label>
-                    <div className={`relative ${formErrors.country ? "mb-6" : "mb-0"}`}>
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin className={`h-5 w-5 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`} />
-                      </div>
-                      <input
-                        type="text"
-                        id="country"
-                        name="country"
-                        value={country}
-                        onChange={onChange}
-                        className={`w-full pl-10 pr-3 py-2 ${theme === "dark"
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                          } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${formErrors.country ? "border-red-500" : ""
-                          }`}
-                        placeholder="Enter your country"
-                      />
-                      {formErrors.country && <p className="absolute text-red-500 text-xs mt-1">{formErrors.country}</p>}
-                    </div>
-                  </div>
+    <label
+      htmlFor="country"
+      className={`block text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"} mb-1`}
+    >
+      Country
+    </label>
+    <div className={`relative ${formErrors.country ? "mb-6" : "mb-0"}`}>
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <MapPin className={`h-5 w-5 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`} />
+      </div>
+      <select
+        id="country"
+        name="country"
+        value={country}
+        onChange={onChange}
+        className={`w-full pl-10 pr-3 py-2 ${
+          theme === "dark"
+            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
+            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
+        } rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
+          formErrors.country ? "border-red-500" : ""
+        }`}
+      >
+        <option value="">Select your country</option>
+        {countryList.map(countryName => (
+          <option key={countryName} value={countryName}>
+            {countryName}
+          </option>
+        ))}
+      </select>
+      {formErrors.country && <p className="absolute text-red-500 text-xs mt-1">{formErrors.country}</p>}
+    </div>
+  </div>
 
                   <div>
                     <label
@@ -472,7 +540,89 @@ const onSubmit = async (e) => {
                     </div>
                   </div>
                 </div>
-
+{/* Availability Section - for both student and tutor roles */}
+<div>
+  <label className={`block text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"} mb-2`}>
+    Availability
+  </label>
+  {(role === 'student' ? studentData : tutorData).availability.map((slot, index) => (
+    <div key={`availability-${index}`} className="card mb-2 p-4 border rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div>
+          <label className="block text-sm mb-1">Day</label>
+          <select
+            className={`w-full pl-3 pr-3 py-2 ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            } rounded-lg border focus:outline-none`}
+            value={slot.day}
+            onChange={(e) => handleAvailabilityChange(role, index, "day", e.target.value)}
+          >
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Start Time</label>
+          <input
+            type="time"
+            className={`w-full pl-3 pr-3 py-2 ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            } rounded-lg border focus:outline-none`}
+            value={slot.startTime}
+            onChange={(e) => handleAvailabilityChange(role, index, "startTime", e.target.value)}
+          />
+        </div>
+        <div className="flex items-end">
+          <div className="flex-grow mr-2">
+            <label className="block text-sm mb-1">End Time</label>
+            <input
+              type="time"
+              className={`w-full pl-3 pr-3 py-2 ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              } rounded-lg border focus:outline-none`}
+              value={slot.endTime}
+              onChange={(e) => handleAvailabilityChange(role, index, "endTime", e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => removeAvailability(role, index)}
+            disabled={(role === 'student' ? studentData : tutorData).availability.length === 1}
+            className={`px-3 py-2.5 ${
+              theme === "dark"
+                ? "bg-gray-600 hover:bg-gray-500 text-white border-gray-600"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300"
+            } rounded-lg border ${
+              (role === 'student' ? studentData : tutorData).availability.length === 1 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <Minus className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+  <button
+    type="button"
+    onClick={() => addAvailability(role)}
+    className={`mt-2 flex items-center text-sm ${
+      theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+    }`}
+  >
+    <Plus className="h-4 w-4 mr-1" /> Add Availability Slot
+  </button>
+</div>
                 {/* Role-specific fields */}
                 {role === "student" && (
                   <div

@@ -176,7 +176,7 @@ const ScheduleSession = () => {
         dispatch(addSession(data.data))
         setSuccess(true)
         setTimeout(() => {
-          navigate("/meetings")
+          navigate("/student/meetings")
         }, 2000)
       } catch (error) {
         dispatch(setSessionError(error.message))

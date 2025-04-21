@@ -274,7 +274,7 @@ const Meetings = () => {
 
             {session.status === "completed" && (
               <Link
-                to={`/review/${session._id}`}
+                to={`/student/review/${session._id}`}
                 className="bg-white border border-indigo-600 text-indigo-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors flex items-center justify-center"
               >
                 <Star className="w-4 h-4 mr-2" />
@@ -358,7 +358,7 @@ const Meetings = () => {
               <h3 className="text-lg font-medium text-gray-800 mb-2">No upcoming sessions</h3>
               <p className="text-gray-500 mb-6">Schedule a session with a tutor to get started.</p>
               <Link
-                to="/search"
+                to="/student/search"
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
               >
                 Find Tutors

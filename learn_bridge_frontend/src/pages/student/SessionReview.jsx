@@ -146,7 +146,7 @@ const SessionReview = () => {
 
       setSuccess(true)
       setTimeout(() => {
-        navigate("/meetings")
+        navigate("/student/meetings")
       }, 2000)
     } catch (err) {
       setLocalError(err.message || "Something went wrong. Please try again.")
