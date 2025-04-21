@@ -21,11 +21,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       setIsLoadingData(true);
       try {
-        // Fetch upcoming sessions using real API
         dispatch(setLoading());
-        console.log("Fetching upcoming sessions from API");
         
-        // Use the actual API endpoint for sessions
         const sessionsResponse = await fetch('http://localhost:5000/api/sessions/upcoming', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -37,15 +34,17 @@ const Dashboard = () => {
         }
         
         const sessionsData = await sessionsResponse.json();
+        setUpcomingSessions(sessionsData.data || []);
+        console.log(upcomingSessions)
         dispatch(setUpcomingSessions(sessionsData.data || []));
   
         // Fetch student courses using real API
-        console.log("Fetching student courses from API");
-        
         const coursesResponse = await fetch('http://localhost:5000/api/courses/student/enrolled', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            
           },
+          credentials: 'include',
         });
         
         if (!coursesResponse.ok) {
@@ -65,32 +64,21 @@ const Dashboard = () => {
     fetchData();
   }, [dispatch]);
 
-  
   const stats = [
-    {
-      title: "Total Hours",
-      value: "42",
-      icon: Clock,
-      color: "bg-indigo-100 text-indigo-600",
-    },
+   
     {
       title: "Courses Enrolled",
-      value: studentCourses?.length || "0",
+      value: String(studentCourses?.length) || "10",
       icon: BookOpen,
       color: "bg-emerald-100 text-emerald-600",
     },
     {
       title: "Upcoming Sessions",
-      value: upcomingSessions?.length || "0",
+      value: String(upcomingSessions.length) || "10",
       icon: Calendar,
       color: "bg-amber-100 text-amber-600",
     },
-    {
-      title: "Overall Progress",
-      value: "68%",
-      icon: BarChart,
-      color: "bg-blue-100 text-blue-600",
-    },
+    
   ]
 
   return (
