@@ -1,5 +1,8 @@
 import express from "express"
 import authRouter from "./routes/auth.routes.js"
+import userRouter from "./routes/users.routes.js"
+import SessionsRouter from "./routes/sessions.routes.js"
+import Coursesrouter from "./routes/courses.routes.js"
 import { connectDB } from "./lib/db.js"
 import cookieParser from 'cookie-parser'
 import dotenv from "dotenv"
@@ -20,6 +23,10 @@ app.use(cors({
 }))
 
 app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
+app.use('/api/sessions', SessionsRouter);
+// app.use('/api/messages', require('./src/routes/messages.routes'));
+app.use('/api/courses', Coursesrouter);
 
 app.listen(PORT,() => {
     console.log("Server is running on port: "+ PORT);

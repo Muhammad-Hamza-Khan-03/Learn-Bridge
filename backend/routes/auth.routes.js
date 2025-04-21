@@ -1,5 +1,5 @@
 import express from "express"
-import {signup,signin,logout,getcurrentUser} from "../controllers/auth.controller.js"
+import {signup,signin,logout,getcurrentUser,updatePassword, updateDetails} from "../controllers/auth.controller.js"
 
 const authRouter = express.Router()
 
@@ -7,9 +7,10 @@ const authRouter = express.Router()
 
 authRouter.post("/signup",signup)
 authRouter.post("/signin",signin)
-authRouter.post("/logout",logout)
-
 // todo: protect route
-authRouter.post("/getcurrentuser",getcurrentUser) 
+authRouter.post("/me",getcurrentUser) 
+authRouter.post("/logout",logout)
+authRouter.put("/updatepassword",updatePassword)
+authRouter.put("/updatedetails",updateDetails)
 
 export default authRouter
