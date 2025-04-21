@@ -4,8 +4,7 @@ import { useSelector, useDispatch } from "react-redux"
 import { ChevronLeft, Star } from "lucide-react"
 import { setCurrentSession, setLoading, setError } from "../../redux/slices/SessionSlice"
 
-const BASE_URL = "https://api.example.com"
-
+const BASE_URL = "http://localhost:5000/api"
 // API endpoints
 export const API_URLS = {
   AUTH: `${BASE_URL}/auth`,
@@ -34,16 +33,16 @@ const SessionReview = () => {
     const fetchSession = async () => {
       dispatch(setLoading())
       try {
-        const response = await fetch(`${API_URLS.SESSIONS}/${sessionId}`, {
+        const response = await fetch(`${BASE_URL}/sessions/${sessionId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+    
         if (!response.ok) {
           throw new Error("Failed to fetch session")
         }
-
+    
         const data = await response.json()
         dispatch(setCurrentSession(data.data))
       } catch (error) {
@@ -59,16 +58,16 @@ const SessionReview = () => {
     const checkExistingReview = async () => {
       try {
         if (currentSession && currentSession.tutor) {
-          const response = await fetch(`${API_URLS.USERS}/reviews/check/${sessionId}`, {
+          const response = await fetch(`${BASE_URL}/reviews/check/${sessionId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-
+    
           if (!response.ok) {
             return // No review exists
           }
-
+    
           const data = await response.json()
           if (data.data) {
             setExistingReview(data.data)
@@ -107,7 +106,7 @@ const SessionReview = () => {
     e.preventDefault()
     setIsSubmitting(true)
     setLocalError(null)
-
+  
     try {
       const reviewData = {
         session: sessionId,
@@ -115,12 +114,12 @@ const SessionReview = () => {
         rating: formData.rating,
         comment: formData.comment,
       }
-
+  
       let response
-
+  
       if (existingReview) {
         // Update existing review
-        response = await fetch(`${API_URLS.USERS}/reviews/${existingReview._id}`, {
+        response = await fetch(`${BASE_URL}/reviews/${existingReview._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -130,7 +129,7 @@ const SessionReview = () => {
         })
       } else {
         // Create new review
-        response = await fetch(`${API_URLS.USERS}/reviews`, {
+        response = await fetch(`${BASE_URL}/reviews`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -139,11 +138,12 @@ const SessionReview = () => {
           body: JSON.stringify(reviewData),
         })
       }
-
+  
       if (!response.ok) {
-        throw new Error("Failed to submit review")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to submit review")
       }
-
+  
       setSuccess(true)
       setTimeout(() => {
         navigate("/student/meetings")

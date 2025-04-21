@@ -3,7 +3,8 @@ import { useSelector, useDispatch } from "react-redux"
 import { SearchIcon, Star, Clock, BookOpen, X } from "lucide-react"
 import { setCourses, setLoading, setError } from "../../redux/slices/courseSlice"
 import CourseCard from "../../components/page-components/CourseCard"
-import { mockApi } from "../../mock/mockApi"
+
+const BASE_URL = "http://localhost:5000/api"
 
 const CourseCatalog = () => {
   const dispatch = useDispatch()
@@ -14,19 +15,31 @@ const CourseCatalog = () => {
     search: "",
   })
 
+
   useEffect(() => {
     const fetchCourses = async () => {
       dispatch(setLoading())
       try {
-        console.log("Fetching courses from mock API")
-        const data = await mockApi.courses.getAllCourses()
+        console.log("Fetching courses from API")
+        // Replace mock API call with direct fetch to backend
+        const response = await fetch(`${BASE_URL}/courses`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch courses")
+        }
+  
+        const data = await response.json()
         dispatch(setCourses(data.data || []))
       } catch (error) {
         console.error("Error fetching courses:", error)
         dispatch(setError(error.message || "An error occurred while fetching courses"))
       }
     }
-
+  
     fetchCourses()
   }, [dispatch])
 

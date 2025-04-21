@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { mockApi } from "../../mock/mockApi"
 import { setTutors, setLoading, setError } from "../../redux/slices/UserSlice"
 
+const BASE_URL = "http://localhost:5000/api"
 const Search = () => {
   const dispatch = useDispatch()
   const { tutors, isLoading, error } = useSelector((state) => state.users)
@@ -26,17 +27,37 @@ const Search = () => {
     const fetchTutors = async () => {
       dispatch(setLoading())
       try {
-        console.log("Fetching tutors from mock API")
-        const data = await mockApi.users.getTutors()
+        console.log("Fetching tutors from API")
+        
+        // Build the search query
+        let queryParams = new URLSearchParams();
+        if (searchParams.subject) queryParams.append('subject', searchParams.subject);
+        if (searchParams.country) queryParams.append('country', searchParams.country);
+        if (searchParams.availability.day && searchParams.availability.time) {
+          queryParams.append('availability', `${searchParams.availability.day},${searchParams.availability.time}`);
+        }
+        
+        const response = await fetch(`${BASE_URL}/users/tutors/search?${queryParams}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch tutors")
+        }
+  
+        const data = await response.json()
         dispatch(setTutors(data.data || []))
       } catch (error) {
         console.error("Error fetching tutors:", error)
         dispatch(setError(error.message || "An error occurred while fetching tutors"))
       }
     }
-
+  
     fetchTutors()
-  }, [dispatch])
+  }, [dispatch, searchParams.subject, searchParams.country, 
+      searchParams.availability.day, searchParams.availability.time])
 
   // Update filtered tutors whenever tutors or search params change
   useEffect(() => {

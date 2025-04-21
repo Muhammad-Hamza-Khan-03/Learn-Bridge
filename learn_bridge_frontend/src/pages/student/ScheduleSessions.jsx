@@ -9,7 +9,7 @@ import {
   setError as setSessionError,
 } from "../../redux/slices/SessionSlice"
 
-const BASE_URL = "https://api.example.com"
+const BASE_URL = "http://localhost:5000/api"
 
 // API endpoints
 export const API_URLS = {
@@ -43,16 +43,16 @@ const ScheduleSession = () => {
     const fetchTutorProfile = async () => {
       dispatch(setLoading())
       try {
-        const response = await fetch(`${API_URLS.USERS}/tutors/${tutorId}`, {
+        const response = await fetch(`${BASE_URL}/users/tutors/${tutorId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+    
         if (!response.ok) {
           throw new Error("Failed to fetch tutor profile")
         }
-
+    
         const data = await response.json()
         dispatch(setCurrentTutor(data.data))
       } catch (error) {
@@ -146,7 +146,7 @@ const ScheduleSession = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+  
     if (validateForm()) {
       dispatch(setSessionLoading())
       try {
@@ -158,8 +158,8 @@ const ScheduleSession = () => {
           endTime: formData.endTime,
           notes: formData.notes,
         }
-
-        const response = await fetch(API_URLS.SESSIONS, {
+  
+        const response = await fetch(`${BASE_URL}/sessions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -167,11 +167,11 @@ const ScheduleSession = () => {
           },
           body: JSON.stringify(sessionData),
         })
-
+  
         if (!response.ok) {
           throw new Error("Failed to create session")
         }
-
+  
         const data = await response.json()
         dispatch(addSession(data.data))
         setSuccess(true)

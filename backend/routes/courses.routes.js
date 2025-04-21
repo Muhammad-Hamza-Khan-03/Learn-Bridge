@@ -20,18 +20,17 @@ Coursesrouter.get('/', getCourses);
 Coursesrouter.get('/:id', getCourse);
 
 // Protected routes
-Coursesrouter.post('/',  createCourse);
-Coursesrouter.put('/:id', updateCourse);
-Coursesrouter.delete('/:id', deleteCourse);
+Coursesrouter.post('/', protect, authorize('tutor') ,createCourse);
+Coursesrouter.put('/:id', protect, authorize('tutor'), updateCourse);
+Coursesrouter.delete('/:id', protect, authorize('tutor'), deleteCourse);
 
 // Student routes
-Coursesrouter.put('/:id/enroll',  enrollCourse);
-Coursesrouter.put('/:id/unenroll', unenrollCourse);
-Coursesrouter.get('/student/enrolled', getStudentCourses);
+Coursesrouter.put('/:id/enroll', protect, authorize('student'),  enrollCourse);
+Coursesrouter.put('/:id/unenroll',protect, authorize('student'), unenrollCourse);
+Coursesrouter.get('/student/enrolled', protect, authorize('student'), getStudentCourses);
 
 // Tutor routes
 Coursesrouter.get('/tutor/mycourses', protect, authorize('tutor'), getTutorCourses);
 
-Coursesrouter.get('/tutor/mycourses', getTutorCourses);
 
 export default Coursesrouter;

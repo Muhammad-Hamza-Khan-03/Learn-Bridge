@@ -5,8 +5,7 @@ import { Calendar, Clock, User, ChevronLeft, Star } from "lucide-react"
 import { setCourse, setLoading, setError, updateCourseInState } from "../../redux/slices/courseSlice"
 
 
-const BASE_URL = "https://api.example.com"
-
+const BASE_URL = "http://localhost:5000/api"
 // API endpoints
 export const API_URLS = {
   AUTH: `${BASE_URL}/auth`,
@@ -30,22 +29,23 @@ const CourseDetail = () => {
     const fetchCourse = async () => {
       dispatch(setLoading())
       try {
-        const response = await fetch(`${API_URLS.COURSES}/${courseId}`, {
+        const response = await fetch(`${BASE_URL}/courses/${courseId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+    
         if (!response.ok) {
           throw new Error("Failed to fetch course")
         }
-
+    
         const data = await response.json()
         dispatch(setCourse(data.data))
       } catch (error) {
         dispatch(setError(error.message))
       }
     }
+    
 
     fetchCourse()
   }, [dispatch, courseId])
@@ -53,17 +53,17 @@ const CourseDetail = () => {
   const handleEnroll = async () => {
     setEnrolling(true)
     try {
-      const response = await fetch(`${API_URLS.COURSES}/${courseId}/enroll`, {
+      const response = await fetch(`${BASE_URL}/courses/${courseId}/enroll`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to enroll in course")
       }
-
+  
       const data = await response.json()
       dispatch(updateCourseInState(data.data))
       setSuccessMessage("Successfully enrolled in course!")
