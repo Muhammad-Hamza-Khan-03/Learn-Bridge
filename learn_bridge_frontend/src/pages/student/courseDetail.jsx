@@ -56,6 +56,7 @@ const CourseDetail = () => {
       const response = await fetch(`${BASE_URL}/courses/${courseId}/enroll`, {
         method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })

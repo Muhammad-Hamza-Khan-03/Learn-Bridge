@@ -44,24 +44,40 @@ const TutorDashboard = () => {
         }
   
         const coursesData = await coursesResponse.json()
-        dispatch(setTutorCourses(coursesData.data)) // Note the .data property
+        
+        // Process and enrich course data before dispatching
+        const enrichedCourses = coursesData.data.map(course => {
+          // Add mock tutor information if needed 
+          // In a real app, this would come from the API
+          return {
+            ...course,
+            tutor: {
+              name: user?.name || "Instructor",
+              credentials: course.subject ? `${course.subject} Instructor` : "Tutor",
+              image: null
+            },
+            // Add other properties needed by CourseCard component
+            duration: course.duration ? `${course.duration} weeks` : "TBD",
+            students: course.enrolledStudents?.length || 0,
+            tags: course.subject ? [course.subject, course.level || "Beginner"] : [],
+            rating: course.averageRating || 4.5,
+            reviews: course.totalReviews || 0,
+            // Use _id as id if needed
+            id: course._id
+          }
+        });
+        
+        dispatch(setTutorCourses(enrichedCourses)) // Dispatch the enriched courses
       } catch (error) {
         console.error("Error fetching dashboard data:", error)
       }
     }
   
     fetchData()
-  }, [dispatch])
+  }, [dispatch, user?.name])
+  
 
   const stats = [
-    {
-      title: "Total Earnings",
-      value: "$2,450",
-      icon: DollarSign,
-      color: "bg-emerald-100 text-emerald-600",
-      trend: "this month",
-      trendValue: 12,
-    },
     {
       title: "Upcoming Sessions",
       value: upcomingSessions?.length || 0,
@@ -70,14 +86,7 @@ const TutorDashboard = () => {
       trend: "from last week",
       trendValue: 5,
     },
-    {
-      title: "Active Students",
-      value: "24",
-      icon: Users,
-      color: "bg-[#6366F1] bg-opacity-10 text-[#6366F1]",
-      trend: "new students",
-      trendValue: 3,
-    },
+    
     {
       title: "Average Rating",
       value: "4.8",
@@ -117,7 +126,7 @@ const TutorDashboard = () => {
 
   const handleStatusChange = async (sessionId, status) => {
     try {
-      const response = await fetch(`/api/sessions/${sessionId}`, {
+      const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -139,13 +148,11 @@ const TutorDashboard = () => {
 
   const handleEditCourse = (courseId) => {
     console.log(`Edit course ${courseId}`)
-    // Navigate to edit page
-    // This doesn't need to be changed as it's just navigation
   }
 
   const handleDeleteCourse = async (courseId) => {
     try {
-      const response = await fetch(`/api/courses/${courseId}`, {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

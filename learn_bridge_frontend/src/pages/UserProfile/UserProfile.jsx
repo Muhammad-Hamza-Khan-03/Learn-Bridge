@@ -42,8 +42,10 @@ const UserProfile = () => {
       try {
         dispatch(setLoading());
         
-        const response = await fetch("/api/users/me", {
+        const response = await fetch("http://localhost:5000/api/auth/me", {
+          method:"POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
@@ -297,7 +299,7 @@ const UserProfile = () => {
         // Set loading state in Redux
         dispatch(setLoading());
         
-        const response = await fetch("/api/users/profile", {
+        const response = await fetch("http://localhost:5000/api/users/profile", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -335,7 +337,7 @@ const UserProfile = () => {
         // Set loading state in Redux
         dispatch(setLoading());
         
-        const response = await fetch("/api/users/password", {
+        const response = await fetch("http://localhost:5000/api/users/password", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

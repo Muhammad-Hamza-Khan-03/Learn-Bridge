@@ -36,7 +36,7 @@ const CourseDetail = () => {
       try {
         setLoading(true)
   
-        const response = await fetch(`/api/courses/${courseId}`, {
+        const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -70,7 +70,7 @@ const CourseDetail = () => {
 
   const handleDeleteCourse = async () => {
     try {
-      const response = await fetch(`/api/courses/${courseId}`, {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -91,7 +91,7 @@ const CourseDetail = () => {
   const handleToggleStatus = async () => {
     try {
       // Instead of a dedicated status endpoint, use the course update endpoint
-      const response = await fetch(`/api/courses/${courseId}`, {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

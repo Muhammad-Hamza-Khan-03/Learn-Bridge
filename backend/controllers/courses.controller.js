@@ -298,9 +298,12 @@ export const createCourse = async (req, res, next) => {
     try {
       // Use selective field projection and limit records
       const courses = await Course.find({ tutor: req.user.id })
-        .select('title subject level maxStudents enrolledStudents isActive startDate endDate')
-        .sort('-createdAt')
-        .limit(10);
+  .populate({
+    path: 'tutor',
+    select: 'name profileImage'
+  })
+  .select('title subject level maxStudents enrolledStudents isActive startDate endDate')
+  .sort('-createdAt');
       
       res.status(200).json({
         success: true,

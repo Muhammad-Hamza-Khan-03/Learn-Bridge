@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { Search, Filter, ChevronDown, X, Users } from "lucide-react"
-import StudentCard from "../../components/page-components/StatsCard"
+import StudentCard from "../../components/page-components/studentCard.jsx"
 import { setLoading, setStudents, setError } from "../../redux/slices/UserSlice"
 
 const TutorSearch = () => {
@@ -149,7 +149,7 @@ const TutorSearch = () => {
           if (filters.search) queryParams.append("search", filters.search)
       
           // Changed from /api/students to the correct endpoint
-          const response = await fetch(`/api/users/students/search?${queryParams.toString()}`, {
+          const response = await fetch(`http://localhost:5000/api/users/students/search?${queryParams.toString()}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

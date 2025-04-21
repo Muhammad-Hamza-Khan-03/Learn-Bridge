@@ -34,7 +34,7 @@ const OfferSession = () => {
       if (studentId) {
         try {
           // Changed from /api/students/:id to the correct endpoint
-          const response = await fetch(`/api/users/students/${studentId}`, {
+          const response = await fetch(`http://localhost:5000/api/users/students/${studentId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

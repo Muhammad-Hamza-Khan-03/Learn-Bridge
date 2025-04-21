@@ -29,31 +29,54 @@ const TutorCatalog = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        dispatch(setLoading())
-  
-        // Update to the correct endpoint
-        const response = await fetch("/api/courses/tutor/mycourses", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-  
-        if (!response.ok) {
-          throw new Error("Failed to fetch courses")
-        }
-  
-        const data = await response.json()
-        dispatch(setTutorCourses(data.data)) // Note the .data property
-      } catch (error) {
-        dispatch(setError(error.message))
+ // Fixed course fetching in tutorCatalog.jsx
+useEffect(() => {
+  const fetchCourses = async () => {
+    try {
+      dispatch(setLoading())
+
+      // Update to the correct endpoint
+      const response = await fetch("http://localhost:5000/api/courses/tutor/mycourses", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch courses")
       }
+
+      const data = await response.json()
+      
+      // Process and enrich course data before dispatching
+      const enrichedCourses = data.data.map(course => {
+        // Add mock tutor information if needed
+        return {
+          ...course,
+          tutor: {
+            name: user?.name || "Instructor",
+            credentials: course.subject ? `${course.subject} Instructor` : "Tutor",
+            image: null
+          },
+          // Add other properties needed by CourseCard component
+          duration: course.duration ? `${course.duration} weeks` : "TBD",
+          students: course.enrolledStudents?.length || 0,
+          tags: course.subject ? [course.subject, course.level || "Beginner"] : [],
+          rating: course.averageRating || 4.5,
+          reviews: course.totalReviews || 0,
+          // Use _id as id if needed
+          id: course._id
+        }
+      });
+      
+      dispatch(setTutorCourses(enrichedCourses)) // Dispatch the enriched courses
+    } catch (error) {
+      dispatch(setError(error.message))
     }
-  
-    fetchCourses()
-  }, [dispatch])
+  }
+
+  fetchCourses()
+}, [dispatch, user?.name])
 
   useEffect(() => {
     if (success) {
@@ -113,7 +136,7 @@ const TutorCatalog = () => {
     try {
       dispatch(setLoading())
   
-      const response = await fetch("/api/courses", {
+      const response = await fetch("http://localhost:5000/api/courses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -182,7 +205,7 @@ const TutorCatalog = () => {
 
   const handleDeleteCourse = async (courseId) => {
     try {
-      const response = await fetch(`/api/courses/${courseId}`, {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

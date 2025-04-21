@@ -34,7 +34,7 @@ const TutorMeetings = () => {
         setLocalError(null)
   
         // Fetch upcoming sessions
-        const upcomingResponse = await fetch("/api/sessions/upcoming", {
+        const upcomingResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -48,7 +48,7 @@ const TutorMeetings = () => {
         dispatch(setUpcomingSessions(upcomingData.data)) // Note the .data property
   
         // Fetch session history
-        const historyResponse = await fetch("/api/sessions/history", {
+        const historyResponse = await fetch("http://localhost:5000/api/sessions/history", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -85,7 +85,7 @@ const TutorMeetings = () => {
   
     try {
       // Changed from /api/sessions/:id/status to the correct endpoint
-      const response = await fetch(`/api/sessions/${sessionId}`, {
+      const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +114,7 @@ const TutorMeetings = () => {
   const handleAddMeetingLink = async () => {
     if (meetingLinkData.meetingLink.trim()) {
       try {
-        const response = await fetch(`/api/sessions/${meetingLinkData.sessionId}/meeting-link`, {
+        const response = await fetch(`http://localhost:5000/api/sessions/${meetingLinkData.sessionId}/meeting-link`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
