@@ -316,7 +316,7 @@ export const createCourse = async (req, res, next) => {
   };
   
   // @desc    Get enrolled courses for a student
-  // @route   GET /api/courses/student
+  // @route   GET /api/courses/student/enrolled
   // @access  Private/Student
   export const getStudentCourses = async (req, res, next) => {
     try {

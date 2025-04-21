@@ -8,7 +8,7 @@ import CourseProgressCard from "../../components/page-components/CourseProgressC
 import UpcomingSessionCard from "../../components/page-components/UpcomingSessionCard"
 import { setUpcomingSessions, setError, setLoading } from "../../redux/slices/SessionSlice"
 import { setStudentCourses } from "../../redux/slices/courseSlice"
-import { mockApi } from "../../mock/mockApi"
+
 
 const Dashboard = () => {
   const dispatch = useDispatch()
@@ -16,32 +16,54 @@ const Dashboard = () => {
   const { upcomingSessions, isLoading: sessionsLoading } = useSelector((state) => state.sessions)
   const { studentCourses, isLoading: coursesLoading } = useSelector((state) => state.courses)
   const [isLoadingData, setIsLoadingData] = useState(true)
-
+ 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoadingData(true)
+      setIsLoadingData(true);
       try {
-        // Fetch upcoming sessions using mock API
-        dispatch(setLoading())
-        console.log("Fetching upcoming sessions from mock API")
-
-        const sessionsData = await mockApi.sessions.getUpcomingSessions()
-        dispatch(setUpcomingSessions(sessionsData.data || []))
-
-        // Fetch student courses using mock API
-        console.log("Fetching student courses from mock API")
-        const coursesData = await mockApi.courses.getStudentCourses()
-        dispatch(setStudentCourses(coursesData.data || []))
+        // Fetch upcoming sessions using real API
+        dispatch(setLoading());
+        console.log("Fetching upcoming sessions from API");
+        
+        // Use the actual API endpoint for sessions
+        const sessionsResponse = await fetch('http://localhost:5000/api/sessions/upcoming', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        
+        if (!sessionsResponse.ok) {
+          throw new Error("Failed to fetch upcoming sessions");
+        }
+        
+        const sessionsData = await sessionsResponse.json();
+        dispatch(setUpcomingSessions(sessionsData.data || []));
+  
+        // Fetch student courses using real API
+        console.log("Fetching student courses from API");
+        
+        const coursesResponse = await fetch('http://localhost:5000/api/courses/student/enrolled', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        
+        if (!coursesResponse.ok) {
+          throw new Error("Failed to fetch enrolled courses");
+        }
+        
+        const coursesData = await coursesResponse.json();
+        dispatch(setStudentCourses(coursesData.data || []));
       } catch (error) {
-        console.error("Error fetching data:", error)
-        dispatch(setError(error.message || "An error occurred while fetching data"))
+        console.error("Error fetching data:", error);
+        dispatch(setError(error.message || "An error occurred while fetching data"));
       } finally {
-        setIsLoadingData(false)
+        setIsLoadingData(false);
       }
-    }
-
-    fetchData()
-  }, [dispatch])
+    };
+  
+    fetchData();
+  }, [dispatch]);
 
   const stats = [
     {
