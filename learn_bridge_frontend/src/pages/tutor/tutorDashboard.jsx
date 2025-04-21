@@ -19,37 +19,37 @@ const TutorDashboard = () => {
     const fetchData = async () => {
       try {
         // Fetch upcoming sessions
-        const sessionsResponse = await fetch("/api/sessions/upcoming", {
+        const sessionsResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!sessionsResponse.ok) {
           throw new Error("Failed to fetch upcoming sessions")
         }
-
+  
         const sessionsData = await sessionsResponse.json()
-        dispatch(setUpcomingSessions(sessionsData))
-
-        // Fetch tutor courses
-        const coursesResponse = await fetch("/api/courses/tutor", {
+        dispatch(setUpcomingSessions(sessionsData.data)) // Note the .data property
+  
+        // Fetch tutor courses - Fix the endpoint
+        const coursesResponse = await fetch("http://localhost:5000/api/courses/tutor/mycourses", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!coursesResponse.ok) {
           throw new Error("Failed to fetch courses")
         }
-
+  
         const coursesData = await coursesResponse.json()
-        dispatch(setTutorCourses(coursesData))
+        dispatch(setTutorCourses(coursesData.data)) // Note the .data property
       } catch (error) {
         console.error("Error fetching dashboard data:", error)
       }
     }
-
+  
     fetchData()
   }, [dispatch])
 
@@ -117,7 +117,7 @@ const TutorDashboard = () => {
 
   const handleStatusChange = async (sessionId, status) => {
     try {
-      const response = await fetch(`/api/sessions/${sessionId}/status`, {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -125,13 +125,13 @@ const TutorDashboard = () => {
         },
         body: JSON.stringify({ status }),
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to update session status")
       }
-
+  
       const updatedSession = await response.json()
-      dispatch(updateSession(updatedSession))
+      dispatch(updateSession(updatedSession.data)) // Note the .data property
     } catch (error) {
       console.error("Error updating session status:", error)
     }

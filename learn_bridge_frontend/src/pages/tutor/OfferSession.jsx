@@ -33,24 +33,25 @@ const OfferSession = () => {
     const fetchStudentProfile = async () => {
       if (studentId) {
         try {
-          const response = await fetch(`/api/students/${studentId}`, {
+          // Changed from /api/students/:id to the correct endpoint
+          const response = await fetch(`/api/users/students/${studentId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-
+  
           if (!response.ok) {
             throw new Error("Student not found")
           }
-
+  
           const data = await response.json()
-          dispatch(setCurrentStudent(data))
+          dispatch(setCurrentStudent(data.data)) // Note the .data property
         } catch (err) {
           setLocalError("Student not found: " + (err?.message || "Unknown error"))
         }
       }
     }
-
+  
     fetchStudentProfile()
   }, [dispatch, studentId])
 
@@ -143,7 +144,7 @@ const OfferSession = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+  
     if (validateForm()) {
       const sessionData = {
         student: studentId,
@@ -154,11 +155,11 @@ const OfferSession = () => {
         notes: formData.notes,
         initiatedBy: "tutor",
       }
-
+  
       try {
         dispatch(setLoading())
-
-        const response = await fetch("/api/sessions", {
+  
+        const response = await fetch("http://localhost:5000/api/sessions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -166,13 +167,13 @@ const OfferSession = () => {
           },
           body: JSON.stringify(sessionData),
         })
-
+  
         if (!response.ok) {
           throw new Error("Failed to create session")
         }
-
+  
         const newSession = await response.json()
-        dispatch(addSession(newSession))
+        dispatch(addSession(newSession.data)) // Note the .data property
       } catch (error) {
         dispatch(setError(error.message))
       }

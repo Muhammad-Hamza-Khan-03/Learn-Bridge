@@ -30,36 +30,30 @@ const CourseDetail = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([])
   const [activeTab, setActiveTab] = useState("details")
 
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         setLoading(true)
-
+  
         const response = await fetch(`/api/courses/${courseId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!response.ok) {
           throw new Error("Failed to fetch course details")
         }
-
+  
         const data = await response.json()
-        setCourse(data)
-
-        // Fetch enrolled students if there are any
-        if (data.enrolledStudents && data.enrolledStudents.length > 0) {
-          const studentsResponse = await fetch(`/api/courses/${courseId}/students`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          })
-
-          if (studentsResponse.ok) {
-            const studentsData = await studentsResponse.json()
-            setEnrolledStudents(studentsData)
-          }
+        setCourse(data.data) // Note the .data property
+  
+        // For enrolled students, we need to modify this approach since we don't have a direct endpoint
+        // We'll use the course data itself since it includes enrolled students
+        if (data.data.enrolledStudents && data.data.enrolledStudents.length > 0) {
+          // The enrolledStudents array should already contain student details if it's populated properly
+          setEnrolledStudents(data.data.enrolledStudents)
         }
       } catch (err) {
         console.error("Error fetching course:", err)
@@ -68,7 +62,7 @@ const CourseDetail = () => {
         setLoading(false)
       }
     }
-
+  
     if (courseId) {
       fetchCourse()
     }
@@ -82,11 +76,11 @@ const CourseDetail = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to delete course")
       }
-
+  
       navigate("/tutor/catalog")
     } catch (err) {
       setError(err.message || "Failed to delete course")
@@ -94,10 +88,10 @@ const CourseDetail = () => {
       setShowDeleteModal(false)
     }
   }
-
   const handleToggleStatus = async () => {
     try {
-      const response = await fetch(`/api/courses/${courseId}/status`, {
+      // Instead of a dedicated status endpoint, use the course update endpoint
+      const response = await fetch(`/api/courses/${courseId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -105,13 +99,13 @@ const CourseDetail = () => {
         },
         body: JSON.stringify({ isActive: !course.isActive }),
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to update course status")
       }
-
+  
       const updatedCourse = await response.json()
-      setCourse(updatedCourse)
+      setCourse(updatedCourse.data) // Note the .data property
     } catch (err) {
       setError(err.message || "Failed to update course status")
     }

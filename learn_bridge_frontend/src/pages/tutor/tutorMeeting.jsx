@@ -28,47 +28,47 @@ const TutorMeetings = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [view, setView] = useState("list") // 'list' or 'calendar'
 
-  // Load data on initial render and when refresh is triggered
   useEffect(() => {
     const loadData = async () => {
       try {
         setLocalError(null)
-
+  
         // Fetch upcoming sessions
         const upcomingResponse = await fetch("/api/sessions/upcoming", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!upcomingResponse.ok) {
           throw new Error("Failed to fetch upcoming sessions")
         }
-
+  
         const upcomingData = await upcomingResponse.json()
-        dispatch(setUpcomingSessions(upcomingData))
-
+        dispatch(setUpcomingSessions(upcomingData.data)) // Note the .data property
+  
         // Fetch session history
         const historyResponse = await fetch("/api/sessions/history", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!historyResponse.ok) {
           throw new Error("Failed to fetch session history")
         }
-
+  
         const historyData = await historyResponse.json()
-        dispatch(setSessionHistory(historyData))
+        dispatch(setSessionHistory(historyData.data)) // Note the .data property
       } catch (err) {
         console.error("Failed to load sessions:", err)
         setLocalError("Failed to load your sessions. Please try again.")
       }
     }
-
+  
     loadData()
   }, [dispatch, refreshCount])
+  
 
   // Add a manual refresh function
   const handleRefresh = () => {
@@ -80,11 +80,12 @@ const TutorMeetings = () => {
       openLinkModal(sessionId)
       return
     }
-
+  
     setStatusUpdating(sessionId)
-
+  
     try {
-      const response = await fetch(`/api/sessions/${sessionId}/status`, {
+      // Changed from /api/sessions/:id/status to the correct endpoint
+      const response = await fetch(`/api/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -92,14 +93,14 @@ const TutorMeetings = () => {
         },
         body: JSON.stringify({ status }),
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to update session status")
       }
-
+  
       const updatedSession = await response.json()
-      dispatch(updateSession(updatedSession))
-
+      dispatch(updateSession(updatedSession.data)) // Note the .data property
+  
       // Refresh the sessions
       handleRefresh()
     } catch (err) {

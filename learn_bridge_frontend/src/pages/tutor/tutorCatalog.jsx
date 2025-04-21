@@ -33,24 +33,25 @@ const TutorCatalog = () => {
     const fetchCourses = async () => {
       try {
         dispatch(setLoading())
-
-        const response = await fetch("/api/courses/tutor", {
+  
+        // Update to the correct endpoint
+        const response = await fetch("/api/courses/tutor/mycourses", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!response.ok) {
           throw new Error("Failed to fetch courses")
         }
-
+  
         const data = await response.json()
-        dispatch(setTutorCourses(data))
+        dispatch(setTutorCourses(data.data)) // Note the .data property
       } catch (error) {
         dispatch(setError(error.message))
       }
     }
-
+  
     fetchCourses()
   }, [dispatch])
 
@@ -108,10 +109,10 @@ const TutorCatalog = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+  
     try {
       dispatch(setLoading())
-
+  
       const response = await fetch("/api/courses", {
         method: "POST",
         headers: {
@@ -120,18 +121,17 @@ const TutorCatalog = () => {
         },
         body: JSON.stringify(formData),
       })
-
+  
       if (!response.ok) {
         throw new Error("Failed to create course")
       }
-
+  
       const newCourse = await response.json()
-      dispatch(addCourse(newCourse))
+      dispatch(addCourse(newCourse.data)) // Note the .data property
     } catch (error) {
       dispatch(setError(error.message))
     }
   }
-
   const handleFilterChange = (e) => {
     setFilters({
       ...filters,

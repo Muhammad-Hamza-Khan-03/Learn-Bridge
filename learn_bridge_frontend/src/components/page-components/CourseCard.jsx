@@ -24,6 +24,7 @@ const CourseCard = ({ course, linkTo }) => {
       </div>
 
       <div className="p-6">
+
         <div className="flex items-center mb-2">
           <img
             src={course.tutor.image || "/placeholder.svg"}
@@ -35,7 +36,6 @@ const CourseCard = ({ course, linkTo }) => {
             <p className="text-xs text-gray-500 truncate max-w-[200px]">{course.tutor.credentials}</p>
           </div>
         </div>
-
         <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-indigo-600 transition-colors">
           {course.title}
         </h3>

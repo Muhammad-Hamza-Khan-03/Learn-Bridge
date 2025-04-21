@@ -22,27 +22,27 @@ const TutorSearch = () => {
     const fetchStudents = async () => {
       try {
         dispatch(setLoading())
-
-        const response = await fetch("/api/students", {
+  
+        // Changed from /api/students to the correct endpoint
+        const response = await fetch("http://localhost:5000/api/users/students/search", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-
+  
         if (!response.ok) {
           throw new Error("Failed to fetch students")
         }
-
+  
         const data = await response.json()
-        dispatch(setStudents(data))
+        dispatch(setStudents(data.data)) // Note the .data property
       } catch (error) {
         dispatch(setError(error.message))
       }
     }
-
+  
     fetchStudents()
   }, [dispatch])
-
   // Update filtered students whenever students or search params change
   useEffect(() => {
     if (students && students.length > 0) {
@@ -135,34 +135,36 @@ const TutorSearch = () => {
       ? [...new Set(students.filter((student) => student.country).map((student) => student.country))]
       : []
 
-  const searchStudentsWithFilters = async (filters) => {
-    try {
-      dispatch(setLoading())
-
-      // Create query string from filters
-      const queryParams = new URLSearchParams()
-      if (filters.subject) queryParams.append("subject", filters.subject)
-      if (filters.learningGoal) queryParams.append("learningGoal", filters.learningGoal)
-      if (filters.grade) queryParams.append("grade", filters.grade)
-      if (filters.country) queryParams.append("country", filters.country)
-      if (filters.search) queryParams.append("search", filters.search)
-
-      const response = await fetch(`/api/students?${queryParams.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to search students")
+      // todo:its not being used in jsx
+      const searchStudentsWithFilters = async (filters) => {
+        try {
+          dispatch(setLoading())
+      
+          // Create query string from filters
+          const queryParams = new URLSearchParams()
+          if (filters.subject) queryParams.append("subject", filters.subject)
+          if (filters.learningGoal) queryParams.append("learningGoal", filters.learningGoal)
+          if (filters.grade) queryParams.append("grade", filters.grade)
+          if (filters.country) queryParams.append("country", filters.country)
+          if (filters.search) queryParams.append("search", filters.search)
+      
+          // Changed from /api/students to the correct endpoint
+          const response = await fetch(`/api/users/students/search?${queryParams.toString()}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+      
+          if (!response.ok) {
+            throw new Error("Failed to search students")
+          }
+      
+          const data = await response.json()
+          dispatch(setStudents(data.data)) // Note the .data property
+        } catch (error) {
+          dispatch(setError(error.message))
+        }
       }
-
-      const data = await response.json()
-      dispatch(setStudents(data))
-    } catch (error) {
-      dispatch(setError(error.message))
-    }
-  }
 
   return (
     <div className="space-y-8">
