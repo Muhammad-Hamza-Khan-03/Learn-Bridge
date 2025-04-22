@@ -7,6 +7,7 @@ import {
   addSession,
   setLoading as setSessionLoading,
   setError as setSessionError,
+  setUpcomingSessions
 } from "../../redux/slices/SessionSlice"
 
 const BASE_URL = "http://localhost:5000/api"
@@ -41,6 +42,11 @@ const ScheduleSession = () => {
 
   useEffect(() => {
     const fetchTutorProfile = async () => {
+      if(!tutorId)
+      {
+        navigate("/student/search")
+        return
+      }
       dispatch(setLoading())
       try {
         const response = await fetch(`${BASE_URL}/users/tutors/${tutorId}`, {
@@ -56,7 +62,9 @@ const ScheduleSession = () => {
         const data = await response.json()
         dispatch(setCurrentTutor(data.data))
       } catch (error) {
+        console.error("Error fetching tutor:", error)
         dispatch(setError(error.message))
+        setTimeout(() => navigate("/student/search"), 3000)
       }
     }
 
@@ -169,21 +177,43 @@ const ScheduleSession = () => {
         })
   
         if (!response.ok) {
-          throw new Error("Failed to create session")
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create session");
         }
   
         const data = await response.json()
         dispatch(addSession(data.data))
         setSuccess(true)
+        
+        try {
+          // Refresh the upcoming sessions list
+          const sessionsResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          
+          if (sessionsResponse.ok) {
+            const sessionsData = await sessionsResponse.json();
+            if (sessionsData && sessionsData.data) {
+              dispatch(setUpcomingSessions(sessionsData.data));
+            }
+          }
+        } catch (refreshError) {
+          console.error("Error refreshing sessions:", refreshError);
+          // Don't fail the whole operation if just the refresh fails
+        }
+        
         setTimeout(() => {
           navigate("/student/meetings")
         }, 2000)
       } catch (error) {
-        dispatch(setSessionError(error.message))
+        console.error("Session creation error:", error);
+        dispatch(setSessionError(error.message || "Failed to create session"))
       }
     }
   }
-
+  
   const renderStars = (rating) => {
     return (
       <div className="flex">

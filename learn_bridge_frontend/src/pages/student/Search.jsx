@@ -461,7 +461,7 @@ const Search = () => {
                         View Profile
                       </Link>
                       <Link
-                        to={`/schedule/${tutor._id}`}
+                        to={`/student/schedule/${tutor._id}`}
                         className="block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
                       >
                         Schedule Session

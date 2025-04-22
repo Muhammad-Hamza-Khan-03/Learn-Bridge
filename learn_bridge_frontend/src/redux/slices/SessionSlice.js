@@ -1,4 +1,3 @@
-// learn_bridge_frontend/src/redux/slices/SessionSlice.js
 import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
@@ -36,10 +35,31 @@ const sessionSlice = createSlice({
       state.error = null
     },
     addSession: (state, action) => {
-      state.sessions.push(action.payload)
-      state.upcomingSessions.push(action.payload)
-      state.isLoading = false
-      state.success = true
+      // Check if session already exists to avoid duplicates
+      const sessionExists = state.sessions.some(session => session._id === action.payload._id);
+      const upcomingExists = state.upcomingSessions.some(session => session._id === action.payload._id);
+      
+      if (!sessionExists) {
+        state.sessions.push(action.payload);
+      }
+      
+      if (!upcomingExists && action.payload.status !== 'completed' && action.payload.status !== 'cancelled') {
+        state.upcomingSessions.push(action.payload);
+        
+        // Sort upcoming sessions by date and time
+        state.upcomingSessions.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          return a.startTime.localeCompare(b.startTime);
+        });
+      }
+      
+      state.isLoading = false;
+      state.success = true;
+      state.error = null;
     },
     updateSession: (state, action) => {
       const updatedSession = action.payload
@@ -81,6 +101,7 @@ const sessionSlice = createSlice({
   },
 })
 
+// Explicitly export all action creators
 export const {
   setSessions,
   setUpcomingSessions,

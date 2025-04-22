@@ -153,7 +153,7 @@ const OfferSession = () => {
         startTime: formData.startTime,
         endTime: formData.endTime,
         notes: formData.notes,
-        initiatedBy: "tutor",
+        status: "pending"
       }
   
       try {
@@ -169,13 +169,33 @@ const OfferSession = () => {
         })
   
         if (!response.ok) {
-          throw new Error("Failed to create session")
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create session");
         }
   
         const newSession = await response.json()
-        dispatch(addSession(newSession.data)) // Note the .data property
+        dispatch(addSession(newSession.data))
+        
+        // Also refresh the tutor's upcoming sessions
+        const upcomingResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        
+        if (upcomingResponse.ok) {
+          const upcomingData = await upcomingResponse.json();
+          dispatch(setUpcomingSessions(upcomingData.data));
+        }
+        
+        // Navigate after success
+        setTimeout(() => {
+          navigate("/tutor/meetings");
+        }, 2000);
       } catch (error) {
-        dispatch(setError(error.message))
+        console.error("Error creating session:", error);
+        setLocalError(error.message || "Failed to create session");
+        dispatch(setError(error.message || "Failed to create session"));
       }
     }
   }

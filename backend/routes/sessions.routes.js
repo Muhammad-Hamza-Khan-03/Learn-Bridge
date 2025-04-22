@@ -17,7 +17,7 @@ import { protect,authorize } from "../middlewares/auth.middleware.js";
 SessionsRouter.use(protect);
 
 // Session routes
-SessionsRouter.post('/', authorize('student'), createSession);
+SessionsRouter.post('/', authorize('student','tutor'), createSession);
 SessionsRouter.get('/', getSessions);
 SessionsRouter.get('/upcoming', getUpcomingSessions);
 SessionsRouter.get('/history', getSessionHistory);

@@ -28,46 +28,56 @@ const TutorMeetings = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [view, setView] = useState("list") // 'list' or 'calendar'
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLocalError(null)
+  const loadData = async () => {
+    try {
+      console.log("Loading Data of Meeting")
+      setLocalError(null)
   
-        // Fetch upcoming sessions
-        const upcomingResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
+      // Fetch upcoming sessions
+      const upcomingResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
   
-        if (!upcomingResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
-  
-        const upcomingData = await upcomingResponse.json()
-        dispatch(setUpcomingSessions(upcomingData.data)) // Note the .data property
-  
-        // Fetch session history
-        const historyResponse = await fetch("http://localhost:5000/api/sessions/history", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-  
-        if (!historyResponse.ok) {
-          throw new Error("Failed to fetch session history")
-        }
-  
-        const historyData = await historyResponse.json()
-        dispatch(setSessionHistory(historyData.data)) // Note the .data property
-      } catch (err) {
-        console.error("Failed to load sessions:", err)
-        setLocalError("Failed to load your sessions. Please try again.")
+      if (!upcomingResponse.ok) {
+        throw new Error("Failed to fetch upcoming sessions")
       }
-    }
   
-    loadData()
-  }, [dispatch, refreshCount])
+      const upcomingData = await upcomingResponse.json()
+      dispatch(setUpcomingSessions(upcomingData.data)) // Note the .data property
+  
+      // Fetch session history
+      const historyResponse = await fetch("http://localhost:5000/api/sessions/history", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+  
+      if (!historyResponse.ok) {
+        throw new Error("Failed to fetch session history")
+      }
+  
+      const historyData = await historyResponse.json()
+      dispatch(setSessionHistory(historyData.data)) // Note the .data property
+    } catch (err) {
+      console.error("Failed to load sessions:", err)
+      setLocalError("Failed to load your sessions. Please try again.")
+    }
+  };
+  
+  // In useEffect, add interval for auto-refresh
+  useEffect(() => {
+    loadData();
+    
+    // Auto-refresh data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadData();
+    }, 30000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [refreshCount, dispatch]);
   
 
   // Add a manual refresh function

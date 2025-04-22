@@ -3,64 +3,63 @@ import User from '../models/User.model.js';
 import Student from '../models/Student.model.js';
 import Tutor from '../models/Tutor.model.js';
 
+
 // @desc    Create a new session request
 // @route   POST /api/sessions
-// @access  Private/Student
+// @access  Private/Student & Tutor
 export const createSession = async (req, res) => {
   try {
-    // Check if user is a student
-    if (req.user.role !== 'student') {
+    // Get user role from request
+    const userRole = req.user.role;
+    
+    // If initiated by tutor, student ID should be in request body
+    // If initiated by student, tutor ID should be in request body
+    if (userRole === 'student') {
+      // Add student id to request body
+      req.body.student = req.user.id;
+      
+      // Check if tutor exists
+      const tutor = await Tutor.findById(req.body.tutor);
+      if (!tutor) {
+        return res.status(404).json({
+          success: false,
+          error: 'Tutor not found'
+        });
+      }
+      
+      // Check if tutor teaches the requested subject
+      if (!tutor.expertise.includes(req.body.subject)) {
+        return res.status(400).json({
+          success: false,
+          error: `Tutor does not teach ${req.body.subject}`
+        });
+      }
+      
+    } else if (userRole === 'tutor') {
+      // Add tutor id to request body
+      req.body.tutor = req.user.id;
+      
+      // Check if student exists
+      const student = await Student.findById(req.body.student);
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: 'Student not found'
+        });
+      }
+    } else {
       return res.status(403).json({
         success: false,
-        error: 'Only students can create session requests'
+        error: 'Only students and tutors can create session requests'
       });
     }
-
-    // Add student id to request body
-    req.body.student = req.user.id;
-
-    // Check if tutor exists
-    const tutor = await Tutor.findById(req.body.tutor);
-    if (!tutor) {
-      return res.status(404).json({
-        success: false,
-        error: 'Tutor not found'
-      });
-    }
-
-    // Check if tutor teaches the requested subject
-    if (!tutor.expertise.includes(req.body.subject)) {
-      return res.status(400).json({
-        success: false,
-        error: `Tutor does not teach ${req.body.subject}`
-      });
-    }
-
-    // Check if tutor is available at the requested time
-    const sessionDate = new Date(req.body.date);
-    const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][sessionDate.getDay()];
-    
-    const isAvailable = tutor.availability.some(slot => {
-      return slot.day === dayOfWeek && 
-             slot.startTime <= req.body.startTime && 
-             slot.endTime >= req.body.endTime;
-    });
-
-    //todo: uncomment krna later
-
-    // if (!isAvailable) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     error: 'Tutor is not available at the requested time'
-    //   });
-    // }
 
     // Create session
     const session = await Session.create(req.body);
 
     // Add session to student's enrolledSessions
     await Student.findByIdAndUpdate(
-      req.user.id,
+      req.body.student,
       { $push: { enrolledSessions: session._id } }
     );
 
@@ -75,6 +74,7 @@ export const createSession = async (req, res) => {
       data: session
     });
   } catch (err) {
+    console.error('Session creation error:', err);
     res.status(400).json({
       success: false,
       error: err.message

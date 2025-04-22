@@ -383,13 +383,7 @@ const TutorDashboard = () => {
             <Users className="w-5 h-5 mr-2" />
             Find Students
           </Link>
-          <Link
-            to="/tutor/analytics"
-            className="bg-emerald-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors flex items-center justify-center"
-          >
-            <BarChart2 className="w-5 h-5 mr-2" />
-            View Analytics
-          </Link>
+          
         </div>
       </div>
     </div>
