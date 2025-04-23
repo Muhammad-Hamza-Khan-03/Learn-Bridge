@@ -3,18 +3,27 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.model.js';
 import Message from '../models/Message.model.js';
 
-
 // Initialize Socket.io
 const initializeSocket = (server) => {
+  console.log("Initializing Socket.io server...");
+  
   const io = new socketIo(server, {
     cors: {
       origin: "http://localhost:5173", 
-      methods: ["GET", "POST"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"]
     },
     transports: ['websocket', 'polling'], // Ensure both transports are enabled
+    pingTimeout: 60000, // Increase ping timeout
+    pingInterval: 25000, // Adjust ping interval
   });
+
+  // Store active sockets
+  const activeSockets = new Map();
+  
+  // Make IO instance available globally
+  global.activeSockets = activeSockets;
 
   // Socket.io middleware for authentication
   io.use(async (socket, next) => {
@@ -27,37 +36,35 @@ const initializeSocket = (server) => {
         return next(new Error('Authentication error: Token not provided'));
       }
 
-      // Verify token
-      const decoded = jwt.verify(token,'mysecretkey');
+      try {
+        // Verify token - make sure this matches your JWT secret in auth controller
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mysecretkey');
 
-      // Find user
-      const user = await User.findById(decoded.id);
+        // Find user
+        const user = await User.findById(decoded.id);
 
-      if (!user) {
-        console.log("Socket authentication error: User not found");
-        return next(new Error('Authentication error: User not found'));
+        if (!user) {
+          console.log("Socket authentication error: User not found");
+          return next(new Error('Authentication error: User not found'));
+        }
+
+        // Attach user to socket
+        socket.user = user;
+        console.log(`Socket authenticated: ${user.name} (${user._id}), socket ID: ${socket.id}`);
+        next();
+      } catch (jwtError) {
+        console.log("JWT verification error:", jwtError.message);
+        return next(new Error(`Token verification failed: ${jwtError.message}`));
       }
-
-      // Attach user to socket
-      socket.user = user;
-      console.log(`Socket authenticated: ${user.name} (${user._id}), socket ID: ${socket.id}`);
-      next();
     } catch (err) {
       console.log("Socket authentication error:", err.message);
-      return next(new Error('Authentication error: Invalid token'));
+      return next(new Error('Authentication error: ' + err.message));
     }
   });
 
-  // Store active sockets
-  const activeSockets = new Map();
-  
-  // Make IO instance available globally
-  global.io = io;
-  global.activeSockets = activeSockets;
-
   // Connection event
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.name} (${socket.user._id}), socket ID: ${socket.id}`);
+    console.log(`User connected: ${socket.user?.name} (${socket.user?._id}), socket ID: ${socket.id}`);
 
     // Store socket in active sockets map
     const userId = socket.user._id.toString();
@@ -201,7 +208,7 @@ const initializeSocket = (server) => {
 
     // Handle disconnect
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.user.name} (${socket.user._id})`);
+      console.log(`User disconnected: ${socket.user?.name} (${socket.user?._id})`);
       
       // Remove from active sockets
       if (socket.user && socket.user._id) {
@@ -210,7 +217,7 @@ const initializeSocket = (server) => {
 
       // Let everyone know this user is offline
       socket.broadcast.emit('userOffline', {
-        userId: socket.user._id.toString()
+        userId: socket.user?._id.toString()
       });
     });
 

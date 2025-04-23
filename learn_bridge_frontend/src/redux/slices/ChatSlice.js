@@ -50,72 +50,47 @@ const chatSlice = createSlice({
         [action.payload.userId]: action.payload.messages,
       };
     },
-    receiveMessage: (state, action) => {
-      const { message } = action.payload;
-      
-      if (!message) return;
-      
-      // Extract sender and receiver IDs, handling both object and string formats
-      const receiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
-      const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
-      
-      // Get current user ID from state (not from store)
-      // If we're in a conversation, currentChat will be the other user's ID
-      const currentUserId = state.currentChat;
-      
-      // If we can't determine the current user, try to infer from the message
-      // This is a fallback mechanism only
-      let conversationId;
-      
-      if (state.currentChat) {
-        // We know which conversation we're in
-        if (senderId === state.currentChat || receiverId === state.currentChat) {
-          conversationId = state.currentChat;
-        }
-      } else {
-        // Determine conversation ID based on message participants
-        if (receiverId) {
-          conversationId = receiverId;
-        } else if (senderId) {
-          conversationId = senderId;
-        } else {
-          // Can't determine where to store the message
-          return;
-        }
-      }
-      
-      // Initialize the messages array for this conversation if it doesn't exist
-      if (!state.messages[conversationId]) {
-        state.messages[conversationId] = [];
-      }
-      
-      // Check if this message is a duplicate to avoid adding it twice
-      const isDuplicate = state.messages[conversationId].some(msg => 
-        // Check by ID if available (for server messages)
-        (msg._id && message._id && msg._id === message._id) ||
-        // Or by content and timestamp (for optimistic updates)
-        (msg.content === message.content && 
-         Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
-      );
-      
-      // Only add if not a duplicate
-      if (!isDuplicate) {
-        // If this is a server message replacing an optimistic one, remove the optimistic one
-        if (message._id && !String(message._id).startsWith('temp-')) {
-          state.messages[conversationId] = state.messages[conversationId].filter(msg => 
-            !msg.isOptimistic || msg.content !== message.content
-          );
-        }
-        
-        // Add the new message
-        state.messages[conversationId].push(message);
-      }
-    
-      // Update unread count if receiving a new message not from current user
-      if (state.currentChat !== senderId && senderId !== receiverId) {
-        state.unreadCount += 1;
-      }
-    },
+    // Add this to your chat slice reducer for receiveMessage
+receiveMessage: (state, action) => {
+  const { message } = action.payload;
+  
+  if (!message) return;
+  
+  // Extract sender and receiver IDs, handling both object and string formats
+  const receiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
+  const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
+  
+  // Determine the conversation ID - messages between the same two users should go in the same bucket
+  // regardless of who sent them
+  let conversationId;
+  
+  // Find which ID is not the current user's ID
+  if (senderId !== state.currentChat && receiverId !== state.currentChat) {
+    // If neither ID matches currentChat, put in the logical bucket (whichever ID comes first alphabetically)
+    const ids = [senderId, receiverId].sort();
+    conversationId = ids[0];
+  } else {
+    // Otherwise, use the ID that's not the current user
+    conversationId = senderId === state.currentChat ? receiverId : senderId;
+  }
+  
+  // Initialize the messages array for this conversation if it doesn't exist
+  if (!state.messages[conversationId]) {
+    state.messages[conversationId] = [];
+  }
+  
+  // Check for duplicates
+  const isDuplicate = state.messages[conversationId].some(msg => 
+    (msg._id && message._id && msg._id === message._id) ||
+    (msg.content === message.content && 
+     Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
+  );
+  
+  // Only add if not a duplicate
+  if (!isDuplicate) {
+    state.messages[conversationId].push(message);
+  }
+},
     updateTypingStatus: (state, action) => {
       const { user, isTyping } = action.payload;
 

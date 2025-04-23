@@ -19,6 +19,8 @@ const PORT = process.env.PORT;
 const server = http.createServer(app);
 const io = initializeSocket(server);
 
+global.io = io;
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.json());
@@ -36,7 +38,8 @@ app.use('/api/sessions', SessionsRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/courses', Coursesrouter);
 app.use('/api/messages', messageRouter);
-app.listen(PORT,() => {
+
+server.listen(PORT,() => {
     console.log("Server is running on port: "+ PORT);
   connectDB();
 });
