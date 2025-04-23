@@ -10,7 +10,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   const options = {
     expires: new Date(
-      Date.now() +  1* 24 * 60 * 60 * 1000
+      Date.now() +  100* 24 * 60 * 60 * 1000
     ),
     httpOnly: true
   };
@@ -160,7 +160,7 @@ export const signin = async (req, res) => {
       // Send response
       const options = {
         expires: new Date(
-          Date.now() + 1 * 24 * 60 * 60 * 1000
+          Date.now() + 100 * 24 * 60 * 60 * 1000
         ),
         httpOnly: true
       };

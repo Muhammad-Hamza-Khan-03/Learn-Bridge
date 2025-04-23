@@ -130,7 +130,7 @@ const SessionCard = ({ session, onStatusChange }) => {
 
         {session.status === "accepted" && (
           <Link
-            to={`/chat/${session.student?._id || ""}`}
+            to={`/tutor/chat/${session.student?._id || ""}`}
             className="flex-1 bg-white border border-[#6366F1] text-[#6366F1] py-2 px-4 rounded-lg text-sm font-medium hover:bg-[#6366F1] hover:bg-opacity-5 transition-colors flex items-center justify-center"
           >
             <MessageSquare className="w-4 h-4 mr-2" />

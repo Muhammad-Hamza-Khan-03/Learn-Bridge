@@ -8,7 +8,7 @@ import Message from '../models/Message.model.js';
 const initializeSocket = (server) => {
   const io = new socketIo(server, {
     cors: {
-      origin: "http://localhost:5173", // Update this to match your frontend URL
+      origin: "http://localhost:5173", 
       methods: ["GET", "POST"],
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"]

@@ -156,32 +156,35 @@ const Meetings = () => {
   // Helper function to check if chat link should be enabled
   const isChatLinkEnabled = (session) => {
     try {
-      return session && session.tutor && typeof session.tutor === "object" && session.tutor._id
+      return session && session.tutor && (
+        (typeof session.tutor === "object" && session.tutor._id) ||
+        (typeof session.tutor === "string" && session.tutor)
+      );
     } catch (err) {
-      console.error("Error checking chat link:", err)
-      return false
+      console.error("Error checking chat link:", err);
+      return false;
     }
-  }
+  };
 
   // Helper function to get tutor ID for chat link
   const getChatLinkId = (session) => {
     try {
-      if (!session || !session.tutor) return ""
-
+      if (!session || !session.tutor) return "";
+  
       if (typeof session.tutor === "object" && session.tutor._id) {
-        return session.tutor._id
+        return session.tutor._id;
       }
-
+  
       if (typeof session.tutor === "string") {
-        return session.tutor
+        return session.tutor;
       }
-
-      return ""
+  
+      return "";
     } catch (err) {
-      console.error("Error getting chat ID:", err)
-      return ""
+      console.error("Error getting chat ID:", err);
+      return "";
     }
-  }
+  };
 
   const renderSessionCard = (session, isPast = false) => {
     const statusColors = {
@@ -261,12 +264,12 @@ const Meetings = () => {
                   </Link>
                 )}
                 <Link
-                  to={isChatLinkEnabled(session) ? `/chat/${getChatLinkId(session)}` : "#"}
-                  className={`bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center ${!isChatLinkEnabled(session) ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Chat with Tutor
-                </Link>
+  to={isChatLinkEnabled(session) ? `/student/chat/${getChatLinkId(session)}` : "#"}
+  className={`bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center ${!isChatLinkEnabled(session) ? "opacity-50 cursor-not-allowed" : ""}`}
+>
+  <MessageSquare className="w-4 h-4 mr-2" />
+  Chat with Tutor
+</Link>
               </>
             )}
 
