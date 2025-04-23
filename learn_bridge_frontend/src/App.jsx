@@ -22,6 +22,7 @@ import TutorSearch from "../src/pages/tutor/tutorSearch"
 import OfferSession from '../src/pages/tutor/OfferSession'
 import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
+import ChatRoom from './pages/shared-sockets/ChatRoom'
 export default function App() {
 
   return (
@@ -73,6 +74,7 @@ export default function App() {
               }
 
             />
+
             <Route path="/tutor/meetings" element={<TutorMeetings />} />
           </Route>
 
@@ -80,10 +82,19 @@ export default function App() {
           <Route
             path="/profile"
             element={
-                <UserProfile />
-              
+              <UserProfile />
+
             }
           />
+          {/* shared */}
+          <Route
+            path="/chat/:userId"
+            element={
+              <ChatRoom />
+            }
+          />
+
+          {/* none */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>

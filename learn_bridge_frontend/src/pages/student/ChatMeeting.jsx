@@ -3,14 +3,15 @@ import { useSelector, useDispatch } from "react-redux"
 import { Link } from "react-router-dom"
 import { Video, MessageSquare, Calendar, X, CheckCircle, Clock, Star, RefreshCw } from "lucide-react"
 import {
-  setUpcomingSessions,
-  setSessionHistory,
   setLoading,
   setError,
+  setUpcomingSessions,
+  setSessionHistory,
   updateSession,
 } from "../../redux/slices/SessionSlice"
 
-  const BASE_URL = "http://localhost:5000/api"
+const BASE_URL = "http://localhost:5000/api"
+
 const Meetings = () => {
   const dispatch = useDispatch()
   const { upcomingSessions, sessionHistory, isLoading, error } = useSelector((state) => state.sessions)
@@ -22,113 +23,55 @@ const Meetings = () => {
 
   // Load data on initial render
   useEffect(() => {
-    const fetchData = async () => {
-      setIsRefreshing(true)
-      try {
-        dispatch(setLoading())
-    
-        // Fetch upcoming sessions using real API
-        console.log("Fetching upcoming sessions from API")
-        const upcomingResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-    
-        if (!upcomingResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
-    
-        const upcomingData = await upcomingResponse.json()
-        dispatch(setUpcomingSessions(upcomingData.data || []))
-    
-        // Fetch session history using real API
-        console.log("Fetching session history from API")
-        const historyResponse = await fetch(`${BASE_URL}/sessions/history`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-    
-        if (!historyResponse.ok) {
-          throw new Error("Failed to fetch session history")
-        }
-    
-        const historyData = await historyResponse.json()
-        dispatch(setSessionHistory(historyData.data || []))
-      } catch (error) {
-        console.error("Error fetching sessions:", error)
-        dispatch(setError(error.message || "An error occurred while fetching sessions"))
-        setLocalError("Failed to load your sessions. Please try again.")
-      } finally {
-        setIsRefreshing(false)
-      }
-    }
-
     fetchData()
-    
-  }, [dispatch])
+  }, [])
 
-  // Add a manual refresh function
-  const handleRefresh = () => {
-    // const fetchData = async () => {
-    //   setIsRefreshing(true)
-    //   try {
-    //     // Fetch upcoming sessions
-    //     const upcomingData = await mockApi.sessions.getUpcomingSessions()
-    //     dispatch(setUpcomingSessions(upcomingData.data))
-
-    //     // Fetch session history
-    //     const historyData = await mockApi.sessions.getSessionHistory()
-    //     dispatch(setSessionHistory(historyData.data))
-    //   } catch (error) {
-    //     setLocalError("Failed to refresh sessions. Please try again.")
-    //   } finally {
-    //     setIsRefreshing(false)
-    //   }
-    // }
-    const fetchData = async () => {
-      setIsRefreshing(true)
-      try {
-        dispatch(setLoading())
-    
-        // Fetch upcoming sessions using real API
-        console.log("Fetching upcoming sessions from API")
-        const upcomingResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-    
-        if (!upcomingResponse.ok) {
-          throw new Error("Failed to fetch upcoming sessions")
-        }
-    
-        const upcomingData = await upcomingResponse.json()
-        dispatch(setUpcomingSessions(upcomingData.data || []))
-    
-        // Fetch session history using real API
-        console.log("Fetching session history from API")
-        const historyResponse = await fetch(`${BASE_URL}/sessions/history`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-    
-        if (!historyResponse.ok) {
-          throw new Error("Failed to fetch session history")
-        }
-    
-        const historyData = await historyResponse.json()
-        dispatch(setSessionHistory(historyData.data || []))
-      } catch (error) {
-        console.error("Error fetching sessions:", error)
-        dispatch(setError(error.message || "An error occurred while fetching sessions"))
-        setLocalError("Failed to load your sessions. Please try again.")
-      } finally {
-        setIsRefreshing(false)
+  // Function to fetch session data
+  const fetchData = async () => {
+    setIsRefreshing(true)
+    try {
+      dispatch(setLoading())
+  
+      // Fetch upcoming sessions using real API
+      console.log("Fetching upcoming sessions from API")
+      const upcomingResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+  
+      if (!upcomingResponse.ok) {
+        throw new Error("Failed to fetch upcoming sessions")
       }
+  
+      const upcomingData = await upcomingResponse.json()
+      dispatch(setUpcomingSessions(upcomingData.data || []))
+  
+      // Fetch session history using real API
+      console.log("Fetching session history from API")
+      const historyResponse = await fetch(`${BASE_URL}/sessions/history`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+  
+      if (!historyResponse.ok) {
+        throw new Error("Failed to fetch session history")
+      }
+  
+      const historyData = await historyResponse.json()
+      dispatch(setSessionHistory(historyData.data || []))
+    } catch (error) {
+      console.error("Error fetching sessions:", error)
+      dispatch(setError(error.message || "An error occurred while fetching sessions"))
+      setLocalError("Failed to load your sessions. Please try again.")
+    } finally {
+      setIsRefreshing(false)
     }
+  }
+
+  // Manual refresh function
+  const handleRefresh = () => {
     fetchData()
   }
 

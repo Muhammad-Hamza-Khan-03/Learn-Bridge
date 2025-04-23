@@ -2,13 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  getMessages,
-  sendMessage,
-  markMessagesAsRead,
-  connectSocket,
+  setLoading,
+  setError,
+  setMessages,
   receiveMessage,
-  setCurrentChat
-} from "../../redux/slices/ChatSlice"
+  setCurrentChat,
+  setConnected,
+  markMessageReadByReceiver
+} from "../../redux/slices/ChatSlice";
+import io from "socket.io-client";
+
+const BASE_URL = "http://localhost:5000/api";
 
 const ChatRoom = () => {
   const { userId } = useParams();
@@ -49,24 +53,44 @@ const ChatRoom = () => {
       if (!isConnected && userId) {
         setConnectionStatus("connecting");
         try {
-          await dispatch(connectSocket()).unwrap();
+          // Connect to socket
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("No token found");
+          }
+          
+          // Check if io is available on window
+          if (!window.io) {
+            window.io = {};
+          }
+          
+          // If socket already exists, use it
+          if (!window.io.socket) {
+            // Initialize socket connection
+            window.io.socket = io("http://localhost:5000", {
+              auth: { token },
+              transports: ["websocket", "polling"]
+            });
+            
+            window.io.connected = true;
+          }
+          
+          socketRef.current = window.io.socket;
+          dispatch(setConnected(true));
           setConnectionStatus("connected");
           
-          // Use the global socket instance
-          if (window.io && window.io.socket) {
-            socketRef.current = window.io.socket;
-            
-            // Join conversation room
-            socketRef.current.emit("joinConversation", userId);
-            
-            // Set up event listeners
-            setupSocketListeners();
-            socketInitialized.current = true;
-          }
+          // Join conversation room
+          socketRef.current.emit("joinConversation", userId);
+          
+          // Set up event listeners
+          setupSocketListeners();
+          socketInitialized.current = true;
+          
         } catch (error) {
           console.error("Socket connection error:", error);
           setLocalError("Failed to connect to chat server. Please try again later.");
           setConnectionStatus("error");
+          dispatch(setError("Socket connection failed"));
         }
       } else if (isConnected) {
         setConnectionStatus("connected");
@@ -169,7 +193,7 @@ const ChatRoom = () => {
       
       // Mark messages as read if they're from the other user
       if (messageSenderId === userId) {
-        dispatch(markMessagesAsRead(userId));
+        handleMarkAsRead();
       }
     }
   };  
@@ -177,17 +201,53 @@ const ChatRoom = () => {
   // Load messages when userId changes
   useEffect(() => {
     if (userId) {
-      dispatch(getMessages(userId))
-        .unwrap()
-        .then(result => {
-          // Mark messages as read
-          return dispatch(markMessagesAsRead(userId)).unwrap();
-        })
-        .catch(error => {
-          setLocalError("Failed to load messages. Please try again.");
-        });
+      fetchMessages();
     }
-  }, [dispatch, userId]);
+  }, [userId]);
+
+  const fetchMessages = async () => {
+    dispatch(setLoading());
+    try {
+      const response = await fetch(`${BASE_URL}/messages/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+      
+      const data = await response.json();
+      dispatch(setMessages({ userId, messages: data.data }));
+      
+      // Mark messages as read
+      handleMarkAsRead();
+    } catch (error) {
+      dispatch(setError(error.message));
+      setLocalError("Failed to load messages. Please try again.");
+    }
+  };
+
+  const handleMarkAsRead = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/messages/read/${userId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to mark messages as read");
+      }
+      
+      dispatch(markMessageReadByReceiver({ userId }));
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+      // Not setting error state as this is a non-critical operation
+    }
+  };
 
   // Update local messages when messages from store change
   useEffect(() => {
@@ -223,7 +283,7 @@ const ChatRoom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [localMessages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
 
     if (!messageText.trim() || !userId) return;
@@ -234,16 +294,47 @@ const ChatRoom = () => {
     };
     
     // Reset text input immediately for better UX
+    const currentMessage = messageText;
     setMessageText("");
     
-    // Dispatch to send message
-    dispatch(sendMessage(messageData))
-      .unwrap()
-      .catch(err => {
-        console.error("Send message error:", err);
-        setLocalError("Failed to send message. Please try again.");
-        setMessageText(messageText);
+    // Create optimistic response
+    const optimisticMessage = {
+      _id: `temp-${Date.now()}`,
+      content: currentMessage,
+      createdAt: new Date().toISOString(),
+      sender: {
+        _id: user._id,
+        name: user.name,
+        role: user.role
+      },
+      receiver: userId,
+      isRead: false,
+      isOptimistic: true
+    };
+    
+    // Add optimistic message to Redux
+    dispatch(receiveMessage({ message: optimisticMessage }));
+    
+    try {
+      const response = await fetch(`${BASE_URL}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(messageData)
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+      
+      // No need to handle the response as socket will deliver the real message
+    } catch (error) {
+      console.error("Send message error:", error);
+      setLocalError("Failed to send message. Please try again.");
+      setMessageText(currentMessage);
+    }
   };
 
   const formatTime = (timestamp) => {

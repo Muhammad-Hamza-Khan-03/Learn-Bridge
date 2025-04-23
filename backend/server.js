@@ -10,7 +10,7 @@ import dotenv from "dotenv"
 import cors from 'cors';
 import initializeSocket from "./socket/socket.js"
 import http from "http"
-
+import messageRouter from "./routes/messages.routes.js"
 dotenv.config()
 
 const app = express()
@@ -33,9 +33,9 @@ app.use(cors({
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/sessions', SessionsRouter);
-app.use('/api/reviews', reviewRouter); // Added review routes
+app.use('/api/reviews', reviewRouter);
 app.use('/api/courses', Coursesrouter);
-
+app.use('/api/messages', messageRouter);
 app.listen(PORT,() => {
     console.log("Server is running on port: "+ PORT);
   connectDB();

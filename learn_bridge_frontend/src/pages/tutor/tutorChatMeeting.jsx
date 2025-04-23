@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { Link } from "react-router-dom"
 import { Calendar, Filter, Search, ChevronDown, X, Video } from "lucide-react"
-import { setUpcomingSessions, setSessionHistory, updateSession } from "../../redux/slices/SessionSlice"
+import { setLoading, setError, setUpcomingSessions, setSessionHistory, updateSession } from "../../redux/slices/SessionSlice"
 import SessionCard from "../../components/page-components/sessionCard"
+
+const BASE_URL = "http://localhost:5000/api"
 
 const TutorMeetings = () => {
   const dispatch = useDispatch()
@@ -25,14 +27,27 @@ const TutorMeetings = () => {
   })
   const [showFilters, setShowFilters] = useState(false)
   const [view, setView] = useState("list") // 'list' or 'calendar'
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  useEffect(() => {
+    loadData()
+    
+    // Auto-refresh data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadData()
+    }, 30000)
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval)
+  }, [refreshCount])
 
   const loadData = async () => {
+    setIsRefreshing(true)
     try {
-      console.log("Loading Data of Meeting")
-      setLocalError(null)
+      dispatch(setLoading())
   
       // Fetch upcoming sessions
-      const upcomingResponse = await fetch("http://localhost:5000/api/sessions/upcoming", {
+      const upcomingResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -43,10 +58,10 @@ const TutorMeetings = () => {
       }
   
       const upcomingData = await upcomingResponse.json()
-      dispatch(setUpcomingSessions(upcomingData.data)) // Note the .data property
+      dispatch(setUpcomingSessions(upcomingData.data || []))
   
       // Fetch session history
-      const historyResponse = await fetch("http://localhost:5000/api/sessions/history", {
+      const historyResponse = await fetch(`${BASE_URL}/sessions/history`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -57,26 +72,14 @@ const TutorMeetings = () => {
       }
   
       const historyData = await historyResponse.json()
-      dispatch(setSessionHistory(historyData.data)) // Note the .data property
+      dispatch(setSessionHistory(historyData.data || []))
     } catch (err) {
       console.error("Failed to load sessions:", err)
       setLocalError("Failed to load your sessions. Please try again.")
+    } finally {
+      setIsRefreshing(false)
     }
-  };
-  
-  // In useEffect, add interval for auto-refresh
-  useEffect(() => {
-    loadData();
-    
-    // Auto-refresh data every 30 seconds
-    const refreshInterval = setInterval(() => {
-      loadData();
-    }, 30000);
-    
-    // Clean up interval on component unmount
-    return () => clearInterval(refreshInterval);
-  }, [refreshCount, dispatch]);
-  
+  }
 
   // Add a manual refresh function
   const handleRefresh = () => {
@@ -92,8 +95,7 @@ const TutorMeetings = () => {
     setStatusUpdating(sessionId)
   
     try {
-      // Changed from /api/sessions/:id/status to the correct endpoint
-      const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}`, {
+      const response = await fetch(`${BASE_URL}/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -107,7 +109,7 @@ const TutorMeetings = () => {
       }
   
       const updatedSession = await response.json()
-      dispatch(updateSession(updatedSession.data)) // Note the .data property
+      dispatch(updateSession(updatedSession.data))
   
       // Refresh the sessions
       handleRefresh()
@@ -122,7 +124,7 @@ const TutorMeetings = () => {
   const handleAddMeetingLink = async () => {
     if (meetingLinkData.meetingLink.trim()) {
       try {
-        const response = await fetch(`http://localhost:5000/api/sessions/${meetingLinkData.sessionId}/meeting-link`, {
+        const response = await fetch(`${BASE_URL}/sessions/${meetingLinkData.sessionId}/meeting-link`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -136,7 +138,7 @@ const TutorMeetings = () => {
         }
 
         const updatedSession = await response.json()
-        dispatch(updateSession(updatedSession))
+        dispatch(updateSession(updatedSession.data))
 
         setShowLinkModal(false)
         setMeetingLinkData({
@@ -225,12 +227,12 @@ const TutorMeetings = () => {
           <button
             className="ml-2 p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             onClick={handleRefresh}
-            disabled={isLoading}
+            disabled={isLoading || isRefreshing}
             aria-label="Refresh"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`}
+              className={`w-5 h-5 ${isLoading || isRefreshing ? "animate-spin" : ""}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -368,7 +370,7 @@ const TutorMeetings = () => {
 
         {/* Content */}
         <div className="p-6">
-          {isLoading ? (
+          {isLoading || isRefreshing ? (
             <div className="flex justify-center items-center h-60">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
             </div>
