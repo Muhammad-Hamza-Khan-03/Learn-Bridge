@@ -1,7 +1,7 @@
 import { Star, Clock, Users, BookOpen } from "lucide-react"
 import { Link } from "react-router-dom"
 
-const CourseCard = ({ course, linkTo }) => {
+const CourseCard = ({ course, linkTo ,onDelete}) => {
   // Add validation to prevent errors when course object is incomplete
   if (!course) {
     return <div>Loading course data...</div>;
@@ -98,7 +98,7 @@ const CourseCard = ({ course, linkTo }) => {
         </div>
 
         <Link
-          to={linkTo || `/student/course/${course.id || course._id || '#'}`}
+          to={linkTo || `/tutor/course/${course.id || course._id || '#'}`}
           className={`block w-full text-center py-2 rounded-lg font-medium transition-colors ${
             courseEnrolled
               ? "bg-emerald-600 text-white hover:bg-emerald-700"
@@ -110,6 +110,14 @@ const CourseCard = ({ course, linkTo }) => {
           {courseEnrolled ? "Enrolled" : courseAvailableSpots === 0 ? "Course Full" : "View Course"}
         </Link>
       </div>
+      {onDelete && (
+  <button
+    onClick={() => onDelete(course.id || course._id)}
+    className="mt-2 w-full text-center py-2 rounded-lg text-sm font-medium transition-colors bg-rose-100 text-rose-600 hover:bg-rose-200"
+  >
+    Delete Course
+  </button>
+)}
     </div>
   )
 }

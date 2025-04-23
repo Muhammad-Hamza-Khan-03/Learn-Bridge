@@ -8,7 +8,7 @@ import Dashboard from './pages/student/Dashboard'
 import CourseCatalog from '../src/pages/student/courseCatalog'
 import CourseDetail from '../src/pages/student/courseDetail'
 import Search from '../src/pages/student/Search'
-import Meetings from '../src/pages/student/Meeting'
+import Meetings from './pages/student/ChatMeeting'
 import ScheduleSession from '../src/pages/student/ScheduleSessions'
 import SessionReview from '../src/pages/student/SessionReview'
 import { Navigate } from 'react-router-dom'
@@ -20,7 +20,7 @@ import TutorDashboard from "../src/pages/tutor/tutorDashboard"
 import TutorCatalog from "../src/pages/tutor/tutorCatalog"
 import TutorSearch from "../src/pages/tutor/tutorSearch"
 import OfferSession from '../src/pages/tutor/OfferSession'
-import TutorMeetings from '../src/pages/tutor/tutorMeeting'
+import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
 export default function App() {
 

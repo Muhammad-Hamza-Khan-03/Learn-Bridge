@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import {
   BookOpen,
@@ -16,7 +14,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react"
-import { ThemeProvider, useTheme } from "../../components/ui/theme-context"
+import {useTheme } from "../../components/ui/theme-context"
 import SignInModal from "../../components/auth-modals/sign-in"
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -314,12 +312,7 @@ function LandingPage() {
               </div>
 
               {/* Floating elements - repositioned */}
-              <div
-                className={`absolute -top-6 -right-6 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-300"} p-4 rounded-lg shadow-lg hidden md:block z-20`}
-              >
-                
-              </div>
-
+             
               
             </div>
           </div>
@@ -758,135 +751,7 @@ function LandingPage() {
         </div>
       </footer>
 
-      {/* Sign In Modal */}
-      {/* {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div
-            className={`relative ${theme === "dark" ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-300"} rounded-xl p-8 w-full max-w-md`}
-          >
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className={`absolute top-4 right-4 ${theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"}`}
-            >
-              <X className="h-6 w-6" />
-            </button>
-
-            <div className="text-center mb-6">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-2 inline-block mb-4">
-                <BookOpen className="h-6 w-6 text-white" />
-              </div>
-              <h3 className={`text-2xl font-bold ${theme === "dark" ? "" : "text-gray-900"}`}>
-                {loginType === "teacher" ? "Teacher Portal" : "Student Portal"}
-              </h3>
-            </div>
-
-            <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <div className={`inline-flex p-1 ${theme === "dark" ? "bg-gray-800" : "bg-gray-200"} rounded-lg`}>
-                  <button
-                    onClick={() => setLoginType("student")}
-                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                      loginType === "student"
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                        : theme === "dark"
-                          ? "text-gray-300 hover:text-white"
-                          : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    Student
-                  </button>
-                  <button
-                    onClick={() => setLoginType("teacher")}
-                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                      loginType === "teacher"
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                        : theme === "dark"
-                          ? "text-gray-300 hover:text-white"
-                          : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    Teacher
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <form className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className={`block text-sm font-medium ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className={`w-full ${theme === "dark" ? "bg-gray-800 border border-gray-700 text-white" : "bg-gray-50 border border-gray-300 text-gray-900"} rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className={`block text-sm font-medium ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
-                >
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  className={`w-full ${theme === "dark" ? "bg-gray-800 border border-gray-700 text-white" : "bg-gray-50 border border-gray-300 text-gray-900"} rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    className={`h-4 w-4 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-300"} rounded focus:ring-blue-500`}
-                  />
-                 
-                </div>
-                <a href="#" className="text-sm text-blue-400 hover:text-blue-300">
-                  Forgot password?
-                </a>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-md transition-colors"
-              >
-                Sign In
-              </button>
-              <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-md transition-colors" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Logging in...
-            </>
-          ) : (
-            "Login"
-          )}
-        </button>
-
-              <div className="text-center mt-4">
-                <span className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                  Don't have an account?
-                </span>{" "}
-                <a href="#" className="text-blue-400 hover:text-blue-300">
-                  Sign up
-                </a>
-              </div>
-            </form>
-          </div>
-        </div>
-      )} */}
-
+     
 <SignInModal
   isModalOpen={isModalOpen}
   setIsModalOpen={setIsModalOpen}

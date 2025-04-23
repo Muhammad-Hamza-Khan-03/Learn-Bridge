@@ -191,7 +191,7 @@ const CourseCatalog = () => {
                 availableSpots: course.maxStudents - (course.enrolledStudents?.length || 0),
                 enrolled: course.enrolledStudents?.includes(course.user?._id),
               }}
-              linkTo={`/course/${course._id}`}
+              linkTo={`/student/course/${course._id}`}
             />
           ))}
         </div>

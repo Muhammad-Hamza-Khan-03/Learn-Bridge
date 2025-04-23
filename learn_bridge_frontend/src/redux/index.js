@@ -3,7 +3,7 @@ import authReducer from './slices/authSlice'
 import courseReducer from "./slices/courseSlice"
 import sessionReducer from "./slices/SessionSlice"
 import userReducer from "./slices/UserSlice"
-// import chatReducer from "./chat/chatSlice"
+import chatReducer from "./slices/ChatSlice"
 // import adminReducer from "./admin/adminSlice"
 
 const store = configureStore({
@@ -12,7 +12,7 @@ const store = configureStore({
     courses: courseReducer,
     sessions: sessionReducer,
     users: userReducer,
-    // chat: chatReducer,
+    chat: chatReducer,
     // admin: adminReducer,
   },
   // middleware: (getDefaultMiddleware) =>

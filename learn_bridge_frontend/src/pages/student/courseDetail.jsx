@@ -79,6 +79,33 @@ const CourseDetail = () => {
 
   const isEnrolled = course?.enrolledStudents?.some((student) => student._id === user?._id || student === user?._id)
 
+  const handleUnenroll = async () => {
+    setEnrolling(true);
+    try {
+      const response = await fetch(`${BASE_URL}/courses/${courseId}/unenroll`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to unenroll from course");
+      }
+  
+      const data = await response.json();
+      dispatch(updateCourseInState(data.data));
+      setSuccessMessage("Successfully unenrolled from course!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      setErrorMessage(error.message || "Failed to unenroll from course");
+      setTimeout(() => setErrorMessage(""), 3000);
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
   const formatTimings = (timings) => {
     if (!timings || !Array.isArray(timings) || timings.length === 0) {
       return "Schedule not available"
@@ -255,26 +282,28 @@ const CourseDetail = () => {
             </div>
 
             {user?.role === "student" && (
-              <button
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
-                disabled={isEnrolled || course.enrolledStudents.length >= course.maxStudents || enrolling}
-                onClick={handleEnroll}
-              >
-                {enrolling ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Enrolling...
-                  </>
-                ) : isEnrolled ? (
-                  "Already Enrolled"
-                ) : course.enrolledStudents.length >= course.maxStudents ? (
-                  "Course Full"
-                ) : (
-                  "Enroll Now"
-                )}
-              </button>
+  <button
+    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
+    disabled={isEnrolled || course.enrolledStudents.length >= course.maxStudents || enrolling}
+    onClick={isEnrolled ? handleUnenroll : handleEnroll}
+  >
+    {enrolling ? (
+      <>
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        {isEnrolled ? "Unenrolling..." : "Enrolling..."}
+      </>
+    ) : isEnrolled ? (
+      "Unenroll from Course"
+    ) : course.enrolledStudents.length >= course.maxStudents ? (
+      "Course Full"
+    ) : (
+      "Enroll Now"
+    )}
+  </button>
             )}
           </div>
+
+       
 
           {/* Tutor Card */}
           <div className="bg-white rounded-xl shadow-sm p-6">
@@ -314,6 +343,7 @@ const CourseDetail = () => {
                 </p>
               )}
             </div>
+       
 
             <Link
               to={`/tutor/${course.tutor._id}`}
@@ -322,6 +352,12 @@ const CourseDetail = () => {
               View Profile
             </Link>
           </div>
+          <Link
+  to={`/student/schedule/${course.tutor._id}?course=${course._id}`}
+  className="block w-full mt-3 text-center bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
+>
+  Schedule Session with Tutor
+</Link>
         </div>
       </div>
     </div>

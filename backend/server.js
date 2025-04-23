@@ -8,11 +8,16 @@ import { connectDB } from "./lib/db.js"
 import cookieParser from 'cookie-parser'
 import dotenv from "dotenv"
 import cors from 'cors';
+import initializeSocket from "./socket/socket.js"
+import http from "http"
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT;
+
+const server = http.createServer(app);
+const io = initializeSocket(server);
 
 app.use(express.json());
 app.use(cookieParser());

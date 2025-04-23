@@ -176,29 +176,39 @@ export const createCourse = async (req, res, next) => {
   // @desc    Delete course
   // @route   DELETE /api/courses/:id
   // @access  Private/Tutor
-  export const deleteCourse = async (req, res, next) => {
-    try {
-      const course = await Course.findById(req.params.id);
-  
-      if (!course) {
-        return next(new Error(`Course not found with id of ${req.params.id}`, 404));
-      }
-  
-      // Make sure user is course owner
-      if (course.tutor.toString() !== req.user.id && req.user.role !== 'admin') {
-        return next(new Error(`User ${req.user.id} is not authorized to delete this course`, 401));
-      }
-  
-      await course.remove();
-  
-      res.status(200).json({
-        success: true,
-        data: {}
+ export const deleteCourse = async (req, res, next) => {
+  try {
+    const course = await Course.findById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        error: `Course not found with id of ${req.params.id}`
       });
-    } catch (err) {
-      next(err);
     }
-  };
+
+    // Make sure user is course owner
+    if (course.tutor.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(401).json({
+        success: false,
+        error: `User ${req.user.id} is not authorized to delete this course`
+      });
+    }
+
+    // Use findByIdAndDelete instead of remove()
+    await Course.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+};
   
 //   @desc    Enroll in course
 //   @route   PUT /api/courses/:id/enroll

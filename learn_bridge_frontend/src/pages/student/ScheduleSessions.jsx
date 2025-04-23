@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useParams, useNavigate, Link } from "react-router-dom"
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { Calendar, Clock, User, BookOpen, MessageSquare, ChevronLeft, Star } from "lucide-react"
 import { setCurrentTutor, setLoading, setError } from "../../redux/slices/UserSlice"
@@ -21,11 +21,14 @@ export const API_URLS = {
 }
 
 const ScheduleSession = () => {
+  const location = useLocation();
+
   const { tutorId } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { currentTutor, isLoading: tutorLoading } = useSelector((state) => state.users)
   const { isLoading: sessionLoading, error: sessionError } = useSelector((state) => state.sessions)
+  const [courseId, setCourseId] = useState(new URLSearchParams(location.search).get('course'));
 
   const [formData, setFormData] = useState({
     subject: "",
@@ -42,8 +45,7 @@ const ScheduleSession = () => {
 
   useEffect(() => {
     const fetchTutorProfile = async () => {
-      if(!tutorId)
-      {
+      if (!tutorId) {
         navigate("/student/search")
         return
       }
@@ -54,11 +56,11 @@ const ScheduleSession = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-    
+
         if (!response.ok) {
           throw new Error("Failed to fetch tutor profile")
         }
-    
+
         const data = await response.json()
         dispatch(setCurrentTutor(data.data))
       } catch (error) {
@@ -154,7 +156,7 @@ const ScheduleSession = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
+
     if (validateForm()) {
       dispatch(setSessionLoading())
       try {
@@ -165,26 +167,31 @@ const ScheduleSession = () => {
           startTime: formData.startTime,
           endTime: formData.endTime,
           notes: formData.notes,
+          ...(courseId && { course: courseId })
         }
-  
-        const response = await fetch(`${BASE_URL}/sessions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(sessionData),
-        })
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to create session");
+        try {
+          const response = await fetch(`${BASE_URL}/sessions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(sessionData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to create session");
+          }
+
+          const data = await response.json()
+          dispatch(addSession(data.data))
+          setSuccess(true)
+        } catch (error) {
+          console.error("Session creation error:", error);
+          throw new Error(error.message || "Failed to create session");
         }
-  
-        const data = await response.json()
-        dispatch(addSession(data.data))
-        setSuccess(true)
-        
+
         try {
           // Refresh the upcoming sessions list
           const sessionsResponse = await fetch(`${BASE_URL}/sessions/upcoming`, {
@@ -192,7 +199,7 @@ const ScheduleSession = () => {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
-          
+
           if (sessionsResponse.ok) {
             const sessionsData = await sessionsResponse.json();
             if (sessionsData && sessionsData.data) {
@@ -203,7 +210,7 @@ const ScheduleSession = () => {
           console.error("Error refreshing sessions:", refreshError);
           // Don't fail the whole operation if just the refresh fails
         }
-        
+
         setTimeout(() => {
           navigate("/student/meetings")
         }, 2000)
@@ -213,7 +220,7 @@ const ScheduleSession = () => {
       }
     }
   }
-  
+
   const renderStars = (rating) => {
     return (
       <div className="flex">
@@ -477,6 +484,11 @@ const ScheduleSession = () => {
                     <span>{formData.subject}</span>
                   </div>
                 </div>
+              </div>
+            )}
+            {courseId && (
+              <div className="bg-indigo-50 p-4 rounded-lg mb-4">
+                <p className="text-indigo-700 font-medium">This session will be linked to your enrolled course</p>
               </div>
             )}
 

@@ -2,7 +2,7 @@ import Session from '../models/Session.model.js';
 import User from '../models/User.model.js';
 import Student from '../models/Student.model.js';
 import Tutor from '../models/Tutor.model.js';
-
+import Course from '../models/Course.model.js';
 
 // @desc    Create a new session request
 // @route   POST /api/sessions
@@ -12,8 +12,7 @@ export const createSession = async (req, res) => {
     // Get user role from request
     const userRole = req.user.role;
     
-    // If initiated by tutor, student ID should be in request body
-    // If initiated by student, tutor ID should be in request body
+
     if (userRole === 'student') {
       // Add student id to request body
       req.body.student = req.user.id;
@@ -53,7 +52,36 @@ export const createSession = async (req, res) => {
         error: 'Only students and tutors can create session requests'
       });
     }
-
+    if (req.body.course) {
+      const course = await Course.findById(req.body.course);
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          error: 'Course not found'
+        });
+      }
+      
+      // If student is creating session, verify enrollment
+      if (userRole === 'student') {
+        const isEnrolled = course.enrolledStudents.some(
+          student => student.toString() === req.user.id
+        );
+        if (!isEnrolled) {
+          return res.status(403).json({
+            success: false,
+            error: 'You must be enrolled in this course to schedule a session'
+          });
+        }
+      }
+      
+      // If tutor is creating session, verify ownership
+      if (userRole === 'tutor' && course.tutor.toString() !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only create sessions for courses you teach'
+        });
+      }
+    }
     // Create session
     const session = await Session.create(req.body);
 

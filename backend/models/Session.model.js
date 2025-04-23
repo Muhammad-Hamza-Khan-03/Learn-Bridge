@@ -42,6 +42,10 @@ const SessionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+  ,course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  },
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
