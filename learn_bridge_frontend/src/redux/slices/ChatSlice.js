@@ -51,46 +51,65 @@ const chatSlice = createSlice({
       };
     },
     // Add this to your chat slice reducer for receiveMessage
-receiveMessage: (state, action) => {
-  const { message } = action.payload;
-  
-  if (!message) return;
-  
-  // Extract sender and receiver IDs, handling both object and string formats
-  const receiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
-  const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
-  
-  // Determine the conversation ID - messages between the same two users should go in the same bucket
-  // regardless of who sent them
-  let conversationId;
-  
-  // Find which ID is not the current user's ID
-  if (senderId !== state.currentChat && receiverId !== state.currentChat) {
-    // If neither ID matches currentChat, put in the logical bucket (whichever ID comes first alphabetically)
-    const ids = [senderId, receiverId].sort();
-    conversationId = ids[0];
-  } else {
-    // Otherwise, use the ID that's not the current user
-    conversationId = senderId === state.currentChat ? receiverId : senderId;
-  }
-  
-  // Initialize the messages array for this conversation if it doesn't exist
-  if (!state.messages[conversationId]) {
-    state.messages[conversationId] = [];
-  }
-  
-  // Check for duplicates
-  const isDuplicate = state.messages[conversationId].some(msg => 
-    (msg._id && message._id && msg._id === message._id) ||
-    (msg.content === message.content && 
-     Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
-  );
-  
-  // Only add if not a duplicate
-  if (!isDuplicate) {
-    state.messages[conversationId].push(message);
-  }
-},
+    receiveMessage: (state, action) => {
+      const { message } = action.payload;
+      
+      if (!message) return;
+      
+      // Extract sender and receiver IDs, handling both object and string formats
+      const receiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
+      const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
+      
+      // Improved logic to determine the conversation ID
+      // Store messages consistently under the same ID regardless of who's viewing
+      const conversationPartnerId = state.currentChat ? 
+        (senderId === state.currentChat ? senderId : receiverId) : 
+        senderId;
+        
+      console.log(`Redux: storing message under conversationId=${conversationPartnerId}, sender=${senderId}, receiver=${receiverId}`);
+      
+      // Initialize the messages array for this conversation if it doesn't exist
+      if (!state.messages[conversationPartnerId]) {
+        state.messages[conversationPartnerId] = [];
+      }
+      
+      // Check for duplicates
+      const isDuplicate = state.messages[conversationPartnerId].some(msg => 
+        (msg._id && message._id && msg._id === message._id) ||
+        (msg.content === message.content && 
+         Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
+      );
+      
+      // Only add if not a duplicate
+      if (!isDuplicate) {
+        state.messages[conversationPartnerId].push(message);
+        
+        // Sort messages by timestamp
+        state.messages[conversationPartnerId].sort((a, b) => 
+          new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        
+        console.log(`Message added to conversation ${conversationPartnerId}, total messages: ${state.messages[conversationPartnerId].length}`);
+      } else {
+        console.log('Duplicate message detected, not adding');
+      }
+      
+      // Also update the unread count for relevant conversation
+      if (receiverId !== state.currentChat) {
+        state.unreadCount++;
+        
+        // Update the conversation list if it exists
+        const conversationIndex = state.conversations.findIndex(
+          conv => (conv.user._id === senderId || conv.user._id === receiverId)
+        );
+        
+        if (conversationIndex !== -1) {
+          state.conversations[conversationIndex].unreadCount = 
+            (state.conversations[conversationIndex].unreadCount || 0) + 1;
+          state.conversations[conversationIndex].lastMessage = message;
+        }
+      }
+    },
     updateTypingStatus: (state, action) => {
       const { user, isTyping } = action.payload;
 

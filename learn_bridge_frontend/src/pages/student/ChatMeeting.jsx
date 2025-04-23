@@ -263,8 +263,8 @@ const Meetings = () => {
                     Start Video
                   </Link>
                 )}
-                <Link
-  to={isChatLinkEnabled(session) ? `/student/chat/${getChatLinkId(session)}` : "#"}
+             <Link
+  to={isChatLinkEnabled(session) ? `/chat/${getChatLinkId(session)}` : "#"}
   className={`bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center ${!isChatLinkEnabled(session) ? "opacity-50 cursor-not-allowed" : ""}`}
 >
   <MessageSquare className="w-4 h-4 mr-2" />

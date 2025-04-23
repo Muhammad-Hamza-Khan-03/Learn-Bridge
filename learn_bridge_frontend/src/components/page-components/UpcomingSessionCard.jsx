@@ -69,12 +69,12 @@ const UpcomingSessionCard = ({ session }) => {
           </Link>
         )}
         <Link
-          to={`/student/chat/${session.id}`}
-          className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
-        >
-          <MessageSquare className="w-4 h-4 mr-2" />
-          Message
-        </Link>
+  to={`/chat/${session.id}`}
+  className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+>
+  <MessageSquare className="w-4 h-4 mr-2" />
+  Message
+</Link>
       </div>
     </div>
   )

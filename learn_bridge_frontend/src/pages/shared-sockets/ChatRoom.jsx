@@ -170,49 +170,52 @@ const ChatRoom = () => {
   
   
   // Handle new message from socket
- const handleNewMessage = (message) => {
-  console.log("New message received via socket:", message);
-  
-  if (!message || !userId) return;
-  
-  // More robust ID extraction
-  const messageSenderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
-  const messageReceiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
-  
-  // Check if this message is part of the current conversation
-  const currentUserId = user._id.toString();
-  const otherUserId = userId.toString();
-  
-  const isForCurrentConversation = 
-    (messageSenderId.toString() === currentUserId && messageReceiverId.toString() === otherUserId) ||
-    (messageSenderId.toString() === otherUserId && messageReceiverId.toString() === currentUserId);
-  
-  if (isForCurrentConversation) {
-    // Dispatch to Redux store
-    dispatch(receiveMessage({ message }));
+  const handleNewMessage = (message) => {
+    console.log("New message received via socket:", message);
     
-    // Update local messages without filtering
-    setLocalMessages(prevMessages => {
-      // Check for duplicates
-      const isDuplicate = prevMessages.some(msg => 
-        msg._id === message._id || 
-        (msg.content === message.content && Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
-      );
+    if (!message || !userId) return;
+    
+    // More robust ID extraction
+    const messageSenderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
+    const messageReceiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
+    
+    // Check if this message is part of the current conversation
+    const currentUserId = user._id.toString();
+    const otherUserId = userId.toString();
+    
+    // Simplified conversation check: is this message between me and the other user?
+    const isForCurrentConversation = 
+      (messageSenderId === currentUserId && messageReceiverId === otherUserId) ||
+      (messageSenderId === otherUserId && messageReceiverId === currentUserId);
+    
+    console.log(`Message check: sender=${messageSenderId}, receiver=${messageReceiverId}, isForConversation=${isForCurrentConversation}`);
+    
+    if (isForCurrentConversation) {
+      // Dispatch to Redux store
+      dispatch(receiveMessage({ message }));
       
-      if (!isDuplicate) {
-        return [...prevMessages, message].sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
+      // Update local messages without filtering
+      setLocalMessages(prevMessages => {
+        // Check for duplicates
+        const isDuplicate = prevMessages.some(msg => 
+          msg._id === message._id || 
+          (msg.content === message.content && Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
         );
+        
+        if (!isDuplicate) {
+          return [...prevMessages, message].sort((a, b) => 
+            new Date(a.createdAt) - new Date(b.createdAt)
+          );
+        }
+        return prevMessages;
+      });
+      
+      // Mark as read if from other user
+      if (messageSenderId === otherUserId) {
+        handleMarkAsRead();
       }
-      return prevMessages;
-    });
-    
-    // Mark as read if from other user
-    if (messageSenderId.toString() === otherUserId) {
-      handleMarkAsRead();
     }
-  }
-};
+  };
   
 
   const fetchMessages = async () => {
@@ -328,6 +331,54 @@ useEffect(() => {
     setLocalMessages([]);
   }
 }, [messages, userId, user._id]);
+useEffect(() => {
+  // Reset local state
+  setLocalMessages([]);
+  setMessageText("");
+  setOtherUser(null);
+  setLocalError(null);
+  setConnectionStatus("disconnected");
+  
+  // Clean up socket connection
+  if (socketRef.current && socketRef.current.connected) {
+    socketRef.current.emit("leaveConversation", userId);
+  }
+  
+  // Reset Redux chat state
+  dispatch(setCurrentChat(null));
+  
+  // Re-initialize with new userId
+  if (userId) {
+    dispatch(setCurrentChat(userId));
+    fetchMessages();
+    
+    // Initialize socket connection
+    const token = localStorage.getItem("token");
+    if (token && window.io) {
+      if (!window.io.connected) {
+        window.io.connect(token);
+      }
+      
+      // Join new conversation after a brief delay
+      setTimeout(() => {
+        if (window.io.socket && window.io.connected) {
+          socketRef.current = window.io.socket;
+          socketRef.current.emit("joinConversation", userId);
+          setupSocketListeners();
+          setConnectionStatus("connected");
+        }
+      }, 500);
+    }
+  }
+  
+  return () => {
+    // Clean up on unmount
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("leaveConversation", userId);
+    }
+    dispatch(setCurrentChat(null));
+  };
+}, [userId, dispatch]);
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -349,7 +400,7 @@ useEffect(() => {
       };
     }
   }, []);
-  
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
@@ -468,19 +519,15 @@ useEffect(() => {
 <div className="chat-messages">
   {localMessages.length > 0 ? (
     localMessages.map((message, index) => {
-      // Ensure we're working with strings for comparison
-      const messageSenderId = (typeof message.sender === 'object' ? message.sender._id : message.sender)?.toString();
-      const currentUserId = user?._id?.toString();
+      // Simplified determination of whether message is from current user
+      const messageSender = typeof message.sender === 'object' ? message.sender._id : message.sender;
+      const isSentByMe = messageSender?.toString() === user._id?.toString();
       
-      // Debug log to see what's being compared
-      console.log(`Message ${index}: sender=${messageSenderId}, current user=${currentUserId}, isSentByMe=${messageSenderId === currentUserId}`);
+      console.log(`Rendering message ${index}: sender=${messageSender}, isSentByMe=${isSentByMe}, content=${message.content}`);
       
-      const isSentByMe = messageSenderId === currentUserId;
-      const messageId = message._id || `msg-${index}`;
-
       return (
         <div 
-          key={messageId} 
+          key={message._id || `msg-${index}`} 
           className="message-row"
           style={{ 
             textAlign: isSentByMe ? 'right' : 'left',

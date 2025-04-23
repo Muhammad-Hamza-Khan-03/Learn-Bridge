@@ -59,7 +59,6 @@ export default function App() {
               element={
                 <SessionReview />
               } />
-              <Route path="/student/chat/:userId" element={<ChatRoom />} />
           </Route>
           {/* TUtor */}
           <Route path="/tutor" element={<TutorLayout />}>
@@ -68,7 +67,6 @@ export default function App() {
             <Route path="/tutor/catalog" element={<TutorCatalog />} />
             <Route path="/tutor/search" element={<TutorSearch />} />
             <Route path="/tutor/course/:courseId" element={<CourseDetail />} />
-            <Route path="/tutor/chat/:userId" element={<ChatRoom />} />
             <Route
               path="/tutor/schedule/:studentId"
               element={
@@ -89,7 +87,7 @@ export default function App() {
             }
           />
           {/* shared */}
-           
+          <Route path="/chat/:userId" element={<ChatRoom />} />
 
           {/* none */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -511,12 +511,12 @@ const ScheduleSession = () => {
                 )}
               </button>
               <Link
-                to={`/tutor/chat/${tutorId}`}
-                className="bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
-              >
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Message Tutor
-              </Link>
+  to={`/chat/${tutorId}`}
+  className="bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+>
+  <MessageSquare className="w-5 h-5 mr-2" />
+  Message Tutor
+</Link>
             </div>
           </form>
         </div>
