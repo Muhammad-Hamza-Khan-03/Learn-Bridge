@@ -10,7 +10,6 @@ import {
   setConnected,
   markMessageReadByReceiver
 } from "../../redux/slices/ChatSlice";
-import Modal from '../../components/ui/Modal';
 
 const BASE_URL = "http://localhost:5000/api";
 
@@ -29,7 +28,6 @@ const ChatRoom = () => {
   const messagesEndRef = useRef(null);
   const socketInitialized = useRef(false);
   const socketRef = useRef(null);
-  const [showEndChatModal, setShowEndChatModal] = useState(false); // State for modal visibility
 
   // Set current chat in Redux
   useEffect(() => {
@@ -224,18 +222,6 @@ const ChatRoom = () => {
     dispatch(setLoading());
     try {
       console.log(`Fetching messages for conversation with user ${userId}`);
-      
-      // First check if we already have messages in the Redux store
-      if (messages && messages[userId] && messages[userId].length > 0) {
-        console.log(`Using ${messages[userId].length} cached messages from Redux store`);
-        setLocalMessages(messages[userId].sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
-        ));
-        
-        // Even if we have messages, still fetch from server to get any new ones
-        // but we don't need to show loading indicator in this case
-      }
-      
       const response = await fetch(`${BASE_URL}/messages/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -250,36 +236,20 @@ const ChatRoom = () => {
       console.log("Messages API response:", data);
       
       if (data.data && Array.isArray(data.data)) {
-        // Merge with existing messages in Redux to avoid duplicates
-        let mergedMessages = [];
+        // Log each message to see what's going on
+        data.data.forEach((msg, i) => {
+          const senderId = typeof msg.sender === 'object' ? msg.sender._id : msg.sender;
+          const receiverId = typeof msg.receiver === 'object' ? msg.receiver._id : msg.receiver;
+          console.log(`Message ${i}: sender=${senderId}, receiver=${receiverId}, content=${msg.content}`);
+        });
         
-        if (messages && messages[userId]) {
-          // Create a set of existing message IDs for faster lookup
-          const existingMessageIds = new Set(
-            messages[userId]
-              .filter(msg => msg._id) // Filter out messages without IDs
-              .map(msg => msg._id)
-          );
-          
-          // Combine existing messages with new messages, avoiding duplicates
-          mergedMessages = [
-            ...messages[userId],
-            ...data.data.filter(newMsg => newMsg._id && !existingMessageIds.has(newMsg._id))
-          ];
-        } else {
-          mergedMessages = data.data;
-        }
+        // Update Redux with ALL messages regardless of sender/receiver
+        dispatch(setMessages({ userId, messages: data.data }));
         
-        // Sort messages by timestamp
-        mergedMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        
-        // Update Redux with ALL messages
-        dispatch(setMessages({ userId, messages: mergedMessages }));
-        
-        // Update local state directly as well
-        setLocalMessages(mergedMessages);
-        
-        console.log(`Loaded ${mergedMessages.length} messages (${data.data.length} from API)`);
+        // Update local state directly as well to force a re-render
+        setLocalMessages(data.data.sort((a, b) => 
+          new Date(a.createdAt) - new Date(b.createdAt)
+        ));
       }
       
       // Mark messages as read
@@ -319,45 +289,11 @@ const ChatRoom = () => {
   // Load messages when userId changes
   useEffect(() => {
     if (userId) {
-      // Check if we already have messages in Redux
-      if (messages && messages[userId] && messages[userId].length > 0) {
-        // Use cached messages for immediate display
-        setLocalMessages(messages[userId].sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
-        ));
-        
-        // Then fetch in the background to get any new messages
-        fetchMessages();
-      } else {
-        // No cached messages, fetch with loading indicator
-        fetchMessages();
-      }
+      fetchMessages();
     }
   }, [userId]);
 
-  useEffect(() => {
-    // This effect ensures we receive messages even if we were away from the chat
-    const handleOfflineMessages = async () => {
-      if (userId) {
-        console.log("Checking for messages received while away...");
-        fetchMessages();
-      }
-    };
-//focus reconnection
-    window.addEventListener('focus', handleOfflineMessages);
-  
-    // If window.io exists, listen for reconnect events
-    if (window.io && window.io.socket) {
-      window.io.socket.on('reconnect', handleOfflineMessages);
-    }
-    
-    return () => {
-      window.removeEventListener('focus', handleOfflineMessages);
-      if (window.io && window.io.socket) {
-        window.io.socket.off('reconnect', handleOfflineMessages);
-      }
-    };
-  }, [userId]);
+
   
 useEffect(() => {
   if (messages && messages[userId]) {
@@ -532,12 +468,6 @@ useEffect(() => {
     }
   };
 
-  const endChat = () => {
-    // Logic to handle ending the chat
-    setShowEndChatModal(false);
-    navigate("/dashboard"); // Redirect to dashboard after ending chat
-  };
-
   // Check for missing userId
   if (!userId) {
     return (
@@ -656,47 +586,12 @@ useEffect(() => {
                   </button>
                 </div>
               </form>
-              <button 
-                className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                onClick={() => setShowEndChatModal(true)}
-              >
-                End Chat
-              </button>
             </div>
-            <Modal 
-  show={showEndChatModal} 
-  onClose={() => setShowEndChatModal(false)}
-  title="End Chat"
-  footer={
-    <>
-      <button
-        type="button"
-        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-        onClick={endChat}
-      >
-        End Chat
-      </button>
-      <button
-        type="button"
-        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-        onClick={() => setShowEndChatModal(false)}
-      >
-        Cancel
-      </button>
-    </>
-  }
->
-  <p className="text-sm text-gray-500">
-    Are you sure you want to end this chat session? This will close the conversation and return you to the dashboard.
-  </p>
-</Modal>
-    
           </div>
         </div>
       </div>
-     </div>
-    
-);
+    </div>
+  );
 };
 
 export default ChatRoom;
