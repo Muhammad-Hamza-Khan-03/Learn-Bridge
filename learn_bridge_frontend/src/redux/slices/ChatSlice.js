@@ -50,7 +50,6 @@ const chatSlice = createSlice({
         [action.payload.userId]: action.payload.messages,
       };
     },
-    // Add this to your chat slice reducer for receiveMessage
     receiveMessage: (state, action) => {
       const { message } = action.payload;
       
@@ -60,13 +59,17 @@ const chatSlice = createSlice({
       const receiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
       const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
       
-      // Improved logic to determine the conversation ID
-      // Store messages consistently under the same ID regardless of who's viewing
-      const conversationPartnerId = state.currentChat ? 
-        (senderId === state.currentChat ? senderId : receiverId) : 
-        senderId;
-        
-      console.log(`Redux: storing message under conversationId=${conversationPartnerId}, sender=${senderId}, receiver=${receiverId}`);
+      // Store under the conversation partner's ID (not the current user's)
+      let conversationPartnerId;
+      
+      if (state.currentChat) {
+        // We're in a conversation - the partner is whoever we're chatting with
+        conversationPartnerId = state.currentChat;
+      } else {
+        // We're not in a conversation - the partner is whoever sent the message
+        // (assuming it's not from the current user)
+        conversationPartnerId = senderId;
+      }
       
       // Initialize the messages array for this conversation if it doesn't exist
       if (!state.messages[conversationPartnerId]) {
@@ -77,7 +80,7 @@ const chatSlice = createSlice({
       const isDuplicate = state.messages[conversationPartnerId].some(msg => 
         (msg._id && message._id && msg._id === message._id) ||
         (msg.content === message.content && 
-         Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
+          Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
       );
       
       // Only add if not a duplicate
@@ -88,19 +91,15 @@ const chatSlice = createSlice({
         state.messages[conversationPartnerId].sort((a, b) => 
           new Date(a.createdAt) - new Date(b.createdAt)
         );
-        
-        console.log(`Message added to conversation ${conversationPartnerId}, total messages: ${state.messages[conversationPartnerId].length}`);
-      } else {
-        console.log('Duplicate message detected, not adding');
       }
       
-      // Also update the unread count for relevant conversation
+      // Update unread count if appropriate
       if (receiverId !== state.currentChat) {
         state.unreadCount++;
         
-        // Update the conversation list if it exists
+        // Update conversation list if exists
         const conversationIndex = state.conversations.findIndex(
-          conv => (conv.user._id === senderId || conv.user._id === receiverId)
+          conv => (conv.user._id === conversationPartnerId)
         );
         
         if (conversationIndex !== -1) {

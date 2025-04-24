@@ -85,40 +85,47 @@ const initializeSocket = (server) => {
     };
 
     // Handle join conversation
-    socket.on('joinConversation', (userId) => {
-        if (!userId) {
-          console.log(`Invalid userId for joinConversation from ${socket.user.name}`);
-          return;
-        }
-      
-        const senderId = socket.user._id.toString();
-        const receiverId = userId.toString();
-        
-        console.log(`Join conversation request: sender=${senderId}, receiver=${receiverId}`);
-      
-        const conversationRoom = getConversationRoomId(senderId, receiverId);
-        socket.join(conversationRoom);
-        console.log(`${socket.user.name} joined conversation room: ${conversationRoom}`);
-        
-        // Emit an event to both users that they're connected
-        io.to(conversationRoom).emit('conversationJoined', {
-          room: conversationRoom,
-          users: [senderId, receiverId]
-        });
-        
-        // Also emit directly to both users
-        io.to(senderId).emit('conversationJoined', {
-          room: conversationRoom,
-          users: [senderId, receiverId]
-        });
-        
-        io.to(receiverId).emit('conversationJoined', {
-          room: conversationRoom,
-          users: [senderId, receiverId]
-        });
-        
-        console.log(`Conversation join event emitted to room and users`);
-      });
+socket.on('joinConversation', (userId) => {
+    if (!userId) {
+      console.log(`Invalid userId for joinConversation from ${socket.user.name}`);
+      return;
+    }
+  
+    const senderId = socket.user._id.toString();
+    const receiverId = userId.toString();
+    
+    // Validate that sender and receiver are different
+    if (senderId === receiverId) {
+      console.error(`Error: Cannot join conversation with yourself. User ${senderId} attempted to chat with themselves.`);
+      socket.emit('conversationError', { error: 'Cannot chat with yourself' });
+      return;
+    }
+    
+    console.log(`Join conversation request: sender=${senderId}, receiver=${receiverId}`);
+  
+    const conversationRoom = getConversationRoomId(senderId, receiverId);
+    socket.join(conversationRoom);
+    console.log(`${socket.user.name} joined conversation room: ${conversationRoom}`);
+    
+    // Emit an event to both users that they're connected
+    io.to(conversationRoom).emit('conversationJoined', {
+      room: conversationRoom,
+      users: [senderId, receiverId]
+    });
+    
+    // Also emit directly to both users
+    io.to(senderId).emit('conversationJoined', {
+      room: conversationRoom,
+      users: [senderId, receiverId]
+    });
+    
+    io.to(receiverId).emit('conversationJoined', {
+      room: conversationRoom,
+      users: [senderId, receiverId]
+    });
+    
+    console.log(`Conversation join event emitted to room and users`);
+});
 
     // Handle leave conversation
     socket.on('leaveConversation', (userId) => {
@@ -133,62 +140,69 @@ const initializeSocket = (server) => {
     });
 
     // Handle private message
-    socket.on('privateMessage', async (data) => {
-        try {
-          const { receiver, content, session } = data;
+socket.on('privateMessage', async (data) => {
+    try {
+      const { receiver, content, session } = data;
+  
+      if (!receiver || !content) {
+        console.log("Invalid message data:", data);
+        socket.emit('messageError', { error: 'Receiver and content are required' });
+        return;
+      }
+  
+      // Ensure we have proper string IDs
+      const senderId = socket.user._id.toString();
+      const receiverId = receiver.toString();
       
-          if (!receiver || !content) {
-            console.log("Invalid message data:", data);
-            socket.emit('messageError', { error: 'Receiver and content are required' });
-            return;
-          }
-      
-          // Ensure we have proper string IDs
-          const senderId = socket.user._id.toString();
-          const receiverId = receiver.toString();
-      
-          console.log(`Processing private message: sender=${senderId}, receiver=${receiverId}, content=${content.substring(0, 30)}...`);
-      
-          // Create message in database
-          const message = await Message.create({
-            sender: senderId,
-            receiver: receiverId,
-            content,
-            session
-          });
-      
-          // Populate sender and receiver info
-          const populatedMessage = await Message.findById(message._id)
-            .populate({
-              path: 'sender',
-              select: 'name role'
-            })
-            .populate({
-              path: 'receiver',
-              select: 'name role'
-            });
-      
-          // Get conversation room ID
-          const conversationRoom = getConversationRoomId(senderId, receiverId);
-          
-          console.log(`Emitting message to conversation room: ${conversationRoom}`);
-      
-          // Emit to the conversation room
-          io.to(conversationRoom).emit('newMessage', populatedMessage);
-          
-          // Also emit directly to both users' personal rooms
-          io.to(senderId).emit('newMessage', populatedMessage);
-          io.to(receiverId).emit('newMessage', populatedMessage);
-      
-          // Emit confirmation to sender
-          socket.emit('messageSent', populatedMessage);
-          
-          console.log(`Message successfully sent and delivered to room and personal channels`);
-        } catch (err) {
-          console.error('Error sending message:', err);
-          socket.emit('messageError', { error: err.message });
-        }
+      // Verify these are different users
+      if (senderId === receiverId) {
+        console.error(`Error: Sender and receiver are the same: ${senderId}`);
+        socket.emit('messageError', { error: 'Cannot send message to yourself' });
+        return;
+      }
+  
+      console.log(`Processing private message: sender=${senderId}, receiver=${receiverId}, content=${content.substring(0, 30)}...`);
+  
+      // Create message in database
+      const message = await Message.create({
+        sender: senderId,
+        receiver: receiverId,
+        content,
+        session
       });
+  
+      // Populate sender and receiver info
+      const populatedMessage = await Message.findById(message._id)
+        .populate({
+          path: 'sender',
+          select: 'name role'
+        })
+        .populate({
+          path: 'receiver',
+          select: 'name role'
+        });
+  
+      // Get conversation room ID
+      const conversationRoom = getConversationRoomId(senderId, receiverId);
+      
+      console.log(`Emitting message to conversation room: ${conversationRoom}`);
+  
+      // Emit to the conversation room
+      io.to(conversationRoom).emit('newMessage', populatedMessage);
+      
+      // Also emit directly to both users' personal rooms
+      io.to(senderId).emit('newMessage', populatedMessage);
+      io.to(receiverId).emit('newMessage', populatedMessage);
+  
+      // Emit confirmation to sender
+      socket.emit('messageSent', populatedMessage);
+      
+      console.log(`Message successfully sent and delivered to room and personal channels`);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      socket.emit('messageError', { error: err.message });
+    }
+});
 
     // Handle read receipts
     socket.on('markAsRead', async (data) => {

@@ -29,6 +29,14 @@ const ChatRoom = () => {
   const socketInitialized = useRef(false);
   const socketRef = useRef(null);
 
+  useEffect(() => {
+    if (userId && user && userId === user._id?.toString()) {
+      console.error("Cannot chat with yourself!");
+      setLocalError("Cannot chat with yourself.");
+      // Optionally redirect
+      // navigate('/dashboard');
+    }
+  }, [userId, user]);
   // Set current chat in Redux
   useEffect(() => {
     if (userId) {
@@ -45,52 +53,109 @@ const ChatRoom = () => {
       }
     };
   }, [dispatch, userId]);
-
+// Add this useEffect to reset everything when userId changes
+useEffect(() => {
+  // Reset local state
+  setLocalMessages([]);
+  setMessageText("");
+  setOtherUser(null);
+  setLocalError(null);
+  setConnectionStatus("disconnected");
+  
+  // Clean up socket connection
+  if (socketRef.current && socketRef.current.connected) {
+    socketRef.current.emit("leaveConversation", userId);
+  }
+  
+  // Reset Redux chat state
+  dispatch(setCurrentChat(null));
+  
+  // Re-initialize with new userId
+  if (userId) {
+    dispatch(setCurrentChat(userId));
+    fetchMessages();
+    
+    // Initialize socket connection
+    const token = localStorage.getItem("token");
+    if (token && window.io) {
+      if (!window.io.connected) {
+        window.io.connect(token);
+      }
+      
+      // Join new conversation after a brief delay
+      setTimeout(() => {
+        if (window.io.socket && window.io.connected) {
+          socketRef.current = window.io.socket;
+          socketRef.current.emit("joinConversation", userId);
+          setupSocketListeners();
+          setConnectionStatus("connected");
+        }
+      }, 500);
+    }
+  }
+  
+  return () => {
+    // Clean up on unmount
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("leaveConversation", userId);
+    }
+    dispatch(setCurrentChat(null));
+  };
+}, [userId, dispatch]);
   // Connect to socket when component mounts
   useEffect(() => {
     if (!userId) return;
+  
+  // Make sure userId is not the current user's ID
+  if (userId === user._id.toString()) {
+    setLocalError("Cannot chat with yourself. Please select a different user.");
+    return;
+  }
+  
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setLocalError("Authentication required. Please log in.");
+    return;
+  }
+  
+  setConnectionStatus("connecting");
+  console.log(`Connecting to chat with user ID: ${userId} (Current user ID: ${user._id})`);
+  
+  // Use the global socket if it exists
+  if (window.io && window.io.socket) {
+    socketRef.current = window.io.socket;
     
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLocalError("Authentication required. Please log in.");
-      return;
-    }
-    
-    setConnectionStatus("connecting");
-    
-    // Use the global socket if it exists
-    if (window.io && window.io.socket) {
-      socketRef.current = window.io.socket;
+    // If socket is already connected
+    if (socketRef.current.connected) {
+      console.log("Using existing socket connection");
+      dispatch(setConnected(true));
+      setConnectionStatus("connected");
       
-      // If socket is already connected
-      if (socketRef.current.connected) {
-        console.log("Using existing socket connection");
-        dispatch(setConnected(true));
-        setConnectionStatus("connected");
-        
-        // Join conversation room
-        socketRef.current.emit("joinConversation", userId);
-        setupSocketListeners();
-      } else {
-        console.log("Socket exists but not connected, attempting reconnect");
-        window.io.connect(token);
-        
-        // Wait a bit for the connection to establish
-        setTimeout(() => {
-          if (window.io.connected) {
-            socketRef.current = window.io.socket;
-            dispatch(setConnected(true));
-            setConnectionStatus("connected");
-            
-            // Join conversation room
-            socketRef.current.emit("joinConversation", userId);
-            setupSocketListeners();
-          } else {
-            setConnectionStatus("error");
-            setLocalError("Failed to connect to chat server. Please try again.");
-          }
-        }, 1000);
-      }
+      // Join conversation room - MAKE SURE THE PARTNER ID IS CORRECT
+      console.log(`Emitting joinConversation with partner ID: ${userId}`);
+      socketRef.current.emit("joinConversation", userId);
+      setupSocketListeners();
+    } else {
+      console.log("Socket exists but not connected, attempting reconnect");
+      window.io.connect(token);
+      
+      // Wait a bit for the connection to establish
+      setTimeout(() => {
+        if (window.io.connected) {
+          socketRef.current = window.io.socket;
+          dispatch(setConnected(true));
+          setConnectionStatus("connected");
+          
+          // Join conversation room with the RIGHT partner ID
+          console.log(`Emitting joinConversation with partner ID: ${userId}`);
+          socketRef.current.emit("joinConversation", userId);
+          setupSocketListeners();
+        } else {
+          setConnectionStatus("error");
+          setLocalError("Failed to connect to chat server. Please try again.");
+        }
+      }, 1000);
+    }
     } else {
       console.log("No global socket, creating new connection");
       try {
@@ -122,7 +187,7 @@ const ChatRoom = () => {
     return () => {
       cleanupSocketListeners();
     };
-  }, [dispatch, userId]);
+  }, [dispatch, userId,user._id]);
 
   // Setup socket listeners
   const setupSocketListeners = () => {
@@ -175,7 +240,7 @@ const ChatRoom = () => {
     
     if (!message || !userId) return;
     
-    // More robust ID extraction
+    // Extract sender and receiver IDs properly
     const messageSenderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
     const messageReceiverId = typeof message.receiver === 'object' ? message.receiver._id : message.receiver;
     
@@ -183,30 +248,40 @@ const ChatRoom = () => {
     const currentUserId = user._id.toString();
     const otherUserId = userId.toString();
     
-    // Simplified conversation check: is this message between me and the other user?
+    console.log(`Message participants: currentUser=${currentUserId}, otherUser=${otherUserId}, messageSender=${messageSenderId}, messageReceiver=${messageReceiverId}`);
+    
+    // This conversation includes messages where:
+    // 1. Current user sent to other user, OR
+    // 2. Other user sent to current user
     const isForCurrentConversation = 
       (messageSenderId === currentUserId && messageReceiverId === otherUserId) ||
       (messageSenderId === otherUserId && messageReceiverId === currentUserId);
     
-    console.log(`Message check: sender=${messageSenderId}, receiver=${messageReceiverId}, isForConversation=${isForCurrentConversation}`);
+    console.log(`Is this message for current conversation? ${isForCurrentConversation}`);
     
     if (isForCurrentConversation) {
-      // Dispatch to Redux store
+      console.log("Adding message to current conversation");
+      
+      // Dispatch to Redux
       dispatch(receiveMessage({ message }));
       
-      // Update local messages without filtering
+      // Update local messages
       setLocalMessages(prevMessages => {
         // Check for duplicates
         const isDuplicate = prevMessages.some(msg => 
-          msg._id === message._id || 
+          (msg._id && message._id && msg._id === message._id) ||
           (msg.content === message.content && Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
         );
         
         if (!isDuplicate) {
-          return [...prevMessages, message].sort((a, b) => 
+          const newMessages = [...prevMessages, message].sort((a, b) => 
             new Date(a.createdAt) - new Date(b.createdAt)
           );
+          console.log(`Updated localMessages, now have ${newMessages.length} messages`);
+          return newMessages;
         }
+        
+        console.log("Duplicate message detected, not adding");
         return prevMessages;
       });
       
@@ -214,6 +289,8 @@ const ChatRoom = () => {
       if (messageSenderId === otherUserId) {
         handleMarkAsRead();
       }
+    } else {
+      console.log("Message is not for the current conversation, ignoring");
     }
   };
   
@@ -221,7 +298,8 @@ const ChatRoom = () => {
   const fetchMessages = async () => {
     dispatch(setLoading());
     try {
-      console.log(`Fetching messages for conversation with user ${userId}`);
+      console.log(`Fetching messages between current user ${user._id} and ${userId}`);
+      
       const response = await fetch(`${BASE_URL}/messages/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -236,18 +314,43 @@ const ChatRoom = () => {
       console.log("Messages API response:", data);
       
       if (data.data && Array.isArray(data.data)) {
-        // Log each message to see what's going on
-        data.data.forEach((msg, i) => {
+        // Log each message to verify sender and receiver
+        data.data.forEach((msg, index) => {
           const senderId = typeof msg.sender === 'object' ? msg.sender._id : msg.sender;
           const receiverId = typeof msg.receiver === 'object' ? msg.receiver._id : msg.receiver;
-          console.log(`Message ${i}: sender=${senderId}, receiver=${receiverId}, content=${msg.content}`);
+          
+          console.log(`Message ${index}: sender=${senderId}, receiver=${receiverId}, content=${msg.content.substring(0, 30)}`);
+          
+          // Alert if sender equals receiver (this shouldn't happen)
+          if (senderId === receiverId) {
+            console.error(`ERROR: Message ${index} has sender equal to receiver: ${senderId}`);
+          }
         });
         
-        // Update Redux with ALL messages regardless of sender/receiver
-        dispatch(setMessages({ userId, messages: data.data }));
+        // Filter messages to only include those between the current user and the other user
+        const relevantMessages = data.data.filter(msg => {
+          const senderId = typeof msg.sender === 'object' ? msg.sender._id : msg.sender;
+          const receiverId = typeof msg.receiver === 'object' ? msg.receiver._id : msg.receiver;
+          
+          const isRelevant = (
+            (senderId === user._id.toString() && receiverId === userId.toString()) ||
+            (senderId === userId.toString() && receiverId === user._id.toString())
+          );
+          
+          if (!isRelevant) {
+            console.log(`Filtering out irrelevant message: sender=${senderId}, receiver=${receiverId}`);
+          }
+          
+          return isRelevant;
+        });
         
-        // Update local state directly as well to force a re-render
-        setLocalMessages(data.data.sort((a, b) => 
+        console.log(`After filtering, ${relevantMessages.length} of ${data.data.length} messages are relevant to this conversation`);
+        
+        // Update Redux store with filtered messages
+        dispatch(setMessages({ userId, messages: relevantMessages }));
+        
+        // Update local state
+        setLocalMessages(relevantMessages.sort((a, b) => 
           new Date(a.createdAt) - new Date(b.createdAt)
         ));
       }
@@ -294,43 +397,43 @@ const ChatRoom = () => {
   }, [userId]);
 
 
-  
-useEffect(() => {
-  if (messages && messages[userId]) {
-    console.log("Updating local messages from Redux store. Count:", messages[userId].length);
-    
-    // Don't filter messages, show all conversation messages
-    const sortedMessages = [...messages[userId]].sort((a, b) => 
-      new Date(a.createdAt) - new Date(b.createdAt)
-    );
-    
-    // Log the messages to debug
-    sortedMessages.forEach((msg, i) => {
-      const senderId = typeof msg.sender === 'object' ? msg.sender._id : msg.sender;
-      console.log(`Local msg ${i}: sender=${senderId}, user=${user._id}, content=${msg.content}`);
-    });
-    
-    setLocalMessages(sortedMessages);
-    
-    // Try to set other user info if not already set
-    if (!otherUser && sortedMessages.length > 0) {
-      for (const message of sortedMessages) {
-        // Find a message where the other user is the sender or receiver
-        if (message.sender && typeof message.sender === 'object' && 
-            message.sender._id.toString() !== user._id.toString()) {
-          setOtherUser(message.sender);
-          break;
-        } else if (message.receiver && typeof message.receiver === 'object' && 
-                   message.receiver._id.toString() !== user._id.toString()) {
-          setOtherUser(message.receiver);
-          break;
+  useEffect(() => {
+    if (messages && messages[userId]) {
+      console.log("Updating local messages from Redux store. Count:", messages[userId].length);
+      
+      // Don't filter messages, show all conversation messages
+      const sortedMessages = [...messages[userId]].sort((a, b) => 
+        new Date(a.createdAt) - new Date(b.createdAt)
+      );
+      
+      // Log the messages to debug
+      sortedMessages.forEach((msg, i) => {
+        const senderId = typeof msg.sender === 'object' ? msg.sender._id : msg.sender;
+        console.log(`Local msg ${i}: sender=${senderId}, user=${user._id}, content=${msg.content}`);
+      });
+      
+      setLocalMessages(sortedMessages);
+      
+      // Try to set other user info if not already set
+      if (!otherUser && sortedMessages.length > 0) {
+        for (const message of sortedMessages) {
+          // Find a message where the other user is the sender or receiver
+          if (message.sender && typeof message.sender === 'object' && 
+              message.sender._id.toString() !== user._id.toString()) {
+            setOtherUser(message.sender);
+            break;
+          } else if (message.receiver && typeof message.receiver === 'object' && 
+                    message.receiver._id.toString() !== user._id.toString()) {
+            setOtherUser(message.receiver);
+            break;
+          }
         }
       }
+    } else if (!messages[userId]) {
+      setLocalMessages([]);
     }
-  } else if (!messages[userId]) {
-    setLocalMessages([]);
-  }
-}, [messages, userId, user._id]);
+  }, [messages, userId, user._id]);
+
 useEffect(() => {
   // Reset local state
   setLocalMessages([]);
@@ -403,8 +506,16 @@ useEffect(() => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-
+  
     if (!messageText.trim() || !userId) return;
+    
+    // Ensure userId is not the current user's ID
+    if (userId === user._id.toString()) {
+      setLocalError("Cannot send messages to yourself.");
+      return;
+    }
+    
+    console.log(`Sending message to user ID: ${userId} from user ID: ${user._id}`);
     
     const messageData = {
       receiver: userId,
@@ -425,20 +536,27 @@ useEffect(() => {
         name: user.name,
         role: user.role
       },
-      receiver: userId,
+      receiver: {
+        _id: userId
+      },
       isRead: false,
       isOptimistic: true
     };
     
-    // Add optimistic message to Redux
-    dispatch(receiveMessage({ message: optimisticMessage }));
+    // Add optimistic message to local state
+    setLocalMessages(prevMessages => [
+      ...prevMessages, 
+      optimisticMessage
+    ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
     
     try {
       // Try to send via socket first if connected
       if (socketRef.current && socketRef.current.connected) {
+        console.log(`Sending message via socket to user ${userId}: "${currentMessage}"`);
         socketRef.current.emit("privateMessage", messageData);
       } else {
         // Fallback to REST API
+        console.log(`Sending message via API to user ${userId}: "${currentMessage}"`);
         const response = await fetch(`${BASE_URL}/messages`, {
           method: "POST",
           headers: {
@@ -514,16 +632,13 @@ useEffect(() => {
                   ></button>
                 </div>
               )}
-
-// Replace the message rendering section
 <div className="chat-messages">
   {localMessages.length > 0 ? (
     localMessages.map((message, index) => {
-      // Simplified determination of whether message is from current user
       const messageSender = typeof message.sender === 'object' ? message.sender._id : message.sender;
       const isSentByMe = messageSender?.toString() === user._id?.toString();
       
-      console.log(`Rendering message ${index}: sender=${messageSender}, isSentByMe=${isSentByMe}, content=${message.content}`);
+      console.log(`Rendering message ${index}: sender=${messageSender}, user=${user._id}, isSentByMe=${isSentByMe}, content=${message.content}`);
       
       return (
         <div 
@@ -556,8 +671,7 @@ useEffect(() => {
           </div>
         </div>
       );
-    })
-  ) : (
+     })) : (
     <div className="text-center py-5">
       <p>No messages yet. Start the conversation!</p>
     </div>
@@ -592,6 +706,6 @@ useEffect(() => {
       </div>
     </div>
   );
-};
+  };
 
 export default ChatRoom;

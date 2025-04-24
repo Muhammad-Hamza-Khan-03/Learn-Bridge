@@ -213,99 +213,77 @@ export const getSessionMessages = async (req, res) => {
 // @route   POST /api/messages
 // @access  Private
 export const sendMessage = async (req, res) => {
-  try {
-    const { receiver, content, session } = req.body;
-
-    // Validate required fields
-    if (!receiver) {
-      return res.status(400).json({
-        success: false,
-        error: 'Receiver ID is required'
-      });
-    }
-
-    if (!content) {
-      return res.status(400).json({
-        success: false,
-        error: 'Message content is required'
-      });
-    }
-
-    // Check if receiver exists
-    const receiverUser = await User.findById(receiver);
-    if (!receiverUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'Receiver not found'
-      });
-    }
-
-    // Create message
-    const message = await Message.create({
-      sender: req.user.id,
-      receiver,
-      content,
-      session
-    });
-
-    // Populate sender and receiver info
-    const populatedMessage = await Message.findById(message._id)
-      .populate({
-        path: 'sender',
-        select: 'name role'
-      })
-      .populate({
-        path: 'receiver',
-        select: 'name role'
-      })
-      .lean();
-
-    // Double check that population worked
-    if (!populatedMessage.sender || !populatedMessage.sender.name) {
-      populatedMessage.sender = {
-        _id: req.user.id,
-        name: req.user.name,
-        role: req.user.role
-      };
-    }
-
-    if (!populatedMessage.receiver || !populatedMessage.receiver.name) {
-      populatedMessage.receiver = {
-        _id: receiver,
-        name: receiverUser.name,
-        role: receiverUser.role
-      };
-    }
-
-    console.log(`Message sent from ${req.user.id} to ${receiver}: ${content.substring(0, 30)}...`);
-
-    // Check for active socket connection to send real-time notification
-    // This will be a direct communication without needing to wait for the client to poll
-    if (global.io && global.sockets) {
-      // Get the sorted IDs to find conversation room
-      const ids = [req.user.id.toString(), receiver.toString()].sort();
-      const conversationRoom = `conversation:${ids[0]}_${ids[1]}`;
-      
-      // Send to the room and directly to the users
-      if (global.io.to) {
-        global.io.to(conversationRoom).emit('newMessage', populatedMessage);
-        global.io.to(req.user.id.toString()).emit('newMessage', populatedMessage);
-        global.io.to(receiver.toString()).emit('newMessage', populatedMessage);
+    try {
+      const { receiver, content, session } = req.body;
+  
+      // Validate required fields
+      if (!receiver) {
+        return res.status(400).json({
+          success: false,
+          error: 'Receiver ID is required'
+        });
       }
+  
+      if (!content) {
+        return res.status(400).json({
+          success: false,
+          error: 'Message content is required'
+        });
+      }
+      
+      // Get sender ID from authenticated user
+      const senderId = req.user.id;
+      
+      // Make sure sender and receiver are different
+      if (senderId === receiver) {
+        return res.status(400).json({
+          success: false,
+          error: 'Cannot send message to yourself'
+        });
+      }
+  
+      // Check if receiver exists
+      const receiverUser = await User.findById(receiver);
+      if (!receiverUser) {
+        return res.status(404).json({
+          success: false,
+          error: 'Receiver not found'
+        });
+      }
+  
+      // Create message with correct sender and receiver
+      const message = await Message.create({
+        sender: senderId,
+        receiver: receiver,
+        content,
+        session
+      });
+  
+      // Populate sender and receiver info
+      const populatedMessage = await Message.findById(message._id)
+        .populate({
+          path: 'sender',
+          select: 'name role'
+        })
+        .populate({
+          path: 'receiver',
+          select: 'name role'
+        });
+  
+      console.log(`Message created: sender=${senderId}, receiver=${receiver}, content=${content.substring(0, 30)}`);
+  
+      res.status(201).json({
+        success: true,
+        data: populatedMessage
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+      res.status(400).json({
+        success: false,
+        error: err.message
+      });
     }
-
-    res.status(201).json({
-      success: true,
-      data: populatedMessage
-    });
-  } catch (err) {
-    console.error("Error in sendMessage:", err);
-    res.status(400).json({
-      success: false,
-      error: err.message
-    });
-  }
-};
+  };
 
 // @desc    Mark messages as read
 // @route   PUT /api/messages/read/:userId
