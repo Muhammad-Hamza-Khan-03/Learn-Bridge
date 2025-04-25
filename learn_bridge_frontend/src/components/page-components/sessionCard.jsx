@@ -1,3 +1,4 @@
+// learn_bridge_frontend/src/components/page-components/sessionCard.jsx (updates)
 "use client"
 
 import { Calendar, Clock, Video, MessageSquare, User, CheckCircle, XCircle } from "lucide-react"
@@ -115,7 +116,7 @@ const SessionCard = ({ session, onStatusChange }) => {
                   className="flex-1 bg-[#3B82F6] text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors flex items-center justify-center"
                 >
                   <Video className="w-4 h-4 mr-2" />
-                  Start Video
+                  Start Video Session
                 </Link>
                 <button
                   onClick={() => onStatusChange(session._id, "addLink")}

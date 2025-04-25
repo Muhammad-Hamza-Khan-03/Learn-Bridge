@@ -131,9 +131,9 @@ const ScheduleSession = () => {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      if (selectedDate < today) {
-        errors.date = "Date cannot be in the past"
-      }
+      // if (selectedDate < today) {
+      //   errors.date = "Date cannot be in the past"
+      // }
     }
 
     if (!formData.startTime) {

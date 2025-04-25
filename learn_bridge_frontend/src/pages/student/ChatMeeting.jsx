@@ -242,36 +242,36 @@ const Meetings = () => {
           </div>
 
           <div className="flex flex-col space-y-2">
-            {session.status === "accepted" && (
-              <>
-                {session.meetingLink ? (
-                  <a
-                    href={session.meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
-                  >
-                    <Video className="w-4 h-4 mr-2" />
-                    Join Meeting
-                  </a>
-                ) : (
-                  <Link
-                    to={`/video/${session._id}`}
-                    className="bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
-                  >
-                    <Video className="w-4 h-4 mr-2" />
-                    Start Video
-                  </Link>
-                )}
-             <Link
-  to={isChatLinkEnabled(session) ? `/chat/${getChatLinkId(session)}` : "#"}
-  className={`bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center ${!isChatLinkEnabled(session) ? "opacity-50 cursor-not-allowed" : ""}`}
->
-  <MessageSquare className="w-4 h-4 mr-2" />
-  Chat with Tutor
-</Link>
-              </>
-            )}
+          {session.status === "accepted" && (
+  <>
+    {session.meetingLink ? (
+      <a
+        href={session.meetingLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
+      >
+        <Video className="w-4 h-4 mr-2" />
+        Join Meeting
+      </a>
+    ) : (
+      <Link
+        to={`/video/${session._id}`}
+        className="bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
+      >
+        <Video className="w-4 h-4 mr-2" />
+        Start Video Session
+      </Link>
+    )}
+    <Link
+      to={isChatLinkEnabled(session) ? `/chat/${getChatLinkId(session)}` : "#"}
+      className={`bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center ${!isChatLinkEnabled(session) ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      <MessageSquare className="w-4 h-4 mr-2" />
+      Chat with Tutor
+    </Link>
+  </>
+)}
 
             {session.status === "pending" && (
               <button

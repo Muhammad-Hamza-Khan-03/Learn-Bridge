@@ -23,11 +23,15 @@ import OfferSession from '../src/pages/tutor/OfferSession'
 import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
 import ChatRoom from './pages/shared-sockets/ChatRoom'
+import VideoRoom from './pages/shared-sockets/VideoRoom'
+import HMSProvider from './components/video/HMSProvider'
+
 export default function App() {
 
   return (
     <ThemeProvider>
       <ToastProvider>
+      <HMSProvider>
         <Routes>
           {/* todo: if its authenticated then direct to dashboard page */}
           <Route path="/" element={<AppWithTheme />} />
@@ -88,12 +92,12 @@ export default function App() {
           />
           {/* shared */}
           <Route path="/chat/:userId" element={<ChatRoom />} />
-
+          <Route path="/video/:sessionId" element={<VideoRoom />} />
           {/* none */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
-
+</HMSProvider>
       </ToastProvider>
     </ThemeProvider>
   )
