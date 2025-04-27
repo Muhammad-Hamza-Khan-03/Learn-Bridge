@@ -47,6 +47,8 @@ const VideoRoom = () => {
   const [roomCode, setRoomCode] = useState("");
   const messagesEndRef = useRef(null);
 
+
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -61,12 +63,13 @@ const VideoRoom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch session details and token
   useEffect(() => {
-    const fetchSessionDetails = async () => {
+    const setupRoomWithEnvVars = async () => {
       if (!sessionId) {
         setRoomConfig({
           isLoading: false,
+          name: "Meeting Room",
+          
           error: "Session ID is missing"
         });
         return;
@@ -75,53 +78,29 @@ const VideoRoom = () => {
       try {
         setRoomConfig(prev => ({ ...prev, isLoading: true, error: null }));
         
-        // Fetch session details from your backend
-        const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch session details");
-        }
-
-        const sessionData = await response.json();
+        // Use environment variables based on user role instead of API calls
+        const roomId = user.role === "tutor" 
+          ? import.meta.env.TUTOR_ROOM_ID 
+          : import.meta.env.STUDENT_ROOM_ID;
         
-        if (!sessionData.data) {
-          throw new Error("Invalid session data");
+        if (!roomId) {
+          throw new Error(`Room ID for ${user.role} role is not configured`);
         }
-
-        // Now get a token from your token endpoint
-        const tokenResponse = await fetch(`http://localhost:5000/api/video/token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({
-            sessionId: sessionId,
-            role: user.role, // 'student' or 'tutor'
-            userId: user._id,
-            name: user.name
-          })
-        });
-
-        if (!tokenResponse.ok) {
-          throw new Error("Failed to get video token");
-        }
-
-        const tokenData = await tokenResponse.json();
+        
+        // Create a simple mock token (in a real app, you would use a proper token generation mechanism)
+        const mockToken = `mock-token-${Date.now()}-${user.role}`;
         
         setRoomConfig({
           isLoading: false,
-          name: `${sessionData.data.subject} - ${new Date(sessionData.data.date).toLocaleDateString()}`,
-          token: tokenData.token,
+          name: `Meeting Room`,
+          token: mockToken,
           error: null
         });
 
-        // Generate a simple room code for easier joining
-        setRoomCode(`LEARN-${sessionId.substring(0, 6)}`);
+        // Set room code based on environment variable
+        setRoomCode(roomId);
+        
+        console.log(`Using ${user.role} room: ${roomId}`);
       } catch (error) {
         console.error("Error setting up video room:", error);
         setRoomConfig({
@@ -131,18 +110,10 @@ const VideoRoom = () => {
       }
     };
 
-    fetchSessionDetails();
+    setupRoomWithEnvVars();
   }, [sessionId, user]);
 
   const joinRoom = async () => {
-    if (!roomConfig.token) {
-      setRoomConfig(prev => ({
-        ...prev,
-        error: "No token available to join the room"
-      }));
-      return;
-    }
-    
     if (!roomCode.trim()) {
       setRoomConfig(prev => ({
         ...prev,
@@ -152,14 +123,13 @@ const VideoRoom = () => {
     }
     
     try {
-      console.log("Joining room with token and code:", roomCode);
+      console.log(`Joining room with code: ${roomCode}`);
       
-      // In a real implementation, you would use roomCode to get an auth token
-      // For now, we'll just use the token we already have
+      // Use the room code from the input field directly
       const authToken = await hmsActions.getAuthTokenByRoomCode({ roomCode });
       
       await hmsActions.join({
-        authToken: authToken || roomConfig.token,
+        authToken: authToken,
         userName: user.name,
         settings: {
           isAudioMuted: false,
@@ -298,7 +268,7 @@ const VideoRoom = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Enter the room code provided by the session host
+                Enter room code for {user.role}
               </p>
             </div>
             
@@ -330,7 +300,6 @@ const VideoRoom = () => {
       </div>
     );
   }
-
   // Connected view
   return (
     <div className="flex flex-col h-screen overflow-hidden">

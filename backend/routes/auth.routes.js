@@ -8,10 +8,10 @@ const authRouter = express.Router()
 
 authRouter.post("/signup",signup)
 authRouter.post("/signin",signin)
-// todo: protect route
+
 authRouter.post("/me",protect,getcurrentUser) 
-authRouter.post("/logout",logout)
-authRouter.put("/updatepassword",updatePassword)
-authRouter.put("/updatedetails",updateDetails)
+authRouter.post("/logout",protect,logout)
+authRouter.put("/updatepassword",protect,updatePassword)
+authRouter.put("/updatedetails",protect,updateDetails)
 
 export default authRouter

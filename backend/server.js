@@ -11,7 +11,8 @@ import cors from 'cors';
 import initializeSocket from "./socket/socket.js"
 import http from "http"
 import messageRouter from "./routes/messages.routes.js"
-import videoRouter from "./routes/video.route.js"
+import AdminRouter from "./routes/admin.routes.js"
+
 
 dotenv.config()
 
@@ -40,7 +41,7 @@ app.use('/api/sessions', SessionsRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/courses', Coursesrouter);
 app.use('/api/messages', messageRouter);
-app.use('/api/video', videoRouter);
+app.use('/api/admin',AdminRouter)
 
 server.listen(PORT,() => {
     console.log("Server is running on port: "+ PORT);

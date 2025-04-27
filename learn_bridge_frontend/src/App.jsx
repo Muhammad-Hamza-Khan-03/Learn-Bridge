@@ -32,6 +32,7 @@ import {
   useHMSActions,
   useHMSStore
 } from "@100mslive/react-sdk";
+import AdminDashboard from './pages/admin/AdminDashboard'
 
 export default function App() {
 
@@ -110,6 +111,13 @@ export default function App() {
 
             }
           />
+
+<Route
+              path="/admin/dashboard"
+              element={
+                  <AdminDashboard />
+                }
+            />
           {/* shared */}
           <Route path="/chat/:userId" element={<ChatRoom />} />
           
@@ -118,18 +126,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
-
-        {/* <div className="App">
-      <Header />
-      {isConnected ? (
-        <>
-          <Conference />
-          <Footer />
-        </>
-      ) : (
-        <JoinForm />
-      )}
-    </div> */}
 
       </ToastProvider>
     </ThemeProvider>

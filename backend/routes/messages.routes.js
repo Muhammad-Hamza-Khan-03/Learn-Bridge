@@ -11,7 +11,7 @@ import {
 } from '../controllers/messages.controller.js'
 
 // Import auth middleware
-import { protect,authorize } from "../middlewares/auth.middleware.js"
+import { protect } from "../middlewares/auth.middleware.js"
 
 const messageRouter = express.Router()
 
