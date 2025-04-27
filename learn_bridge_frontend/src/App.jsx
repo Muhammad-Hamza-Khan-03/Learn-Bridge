@@ -25,7 +25,7 @@ import UserProfile from './pages/UserProfile/UserProfile'
 import ChatRoom from './pages/shared-sockets/ChatRoom'
 import VideoRoom from './pages/shared-sockets/VideoRoom'
 
-import JoinForm from './pages/shared-sockets/joinform'
+// import JoinForm from './pages/shared-sockets/joinform'
 import { useEffect } from "react";
 import {
   selectIsConnectedToRoom,
@@ -54,7 +54,7 @@ export default function App() {
       
         <Routes>
           {/* todo: if its authenticated then direct to dashboard page */}
-          {/* <Route path="/" element={<AppWithTheme />} /> */}
+          <Route path="/" element={<AppWithTheme />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -119,8 +119,8 @@ export default function App() {
 
         </Routes>
 
-        <div className="App">
-      {/* <Header /> */}
+        {/* <div className="App">
+      <Header />
       {isConnected ? (
         <>
           <Conference />
@@ -129,7 +129,7 @@ export default function App() {
       ) : (
         <JoinForm />
       )}
-    </div>
+    </div> */}
 
       </ToastProvider>
     </ThemeProvider>

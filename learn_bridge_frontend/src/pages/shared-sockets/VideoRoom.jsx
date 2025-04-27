@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
@@ -17,9 +17,9 @@ import {
   PhoneOff, 
   MessageSquare, 
   Users, 
-  Settings,
   ChevronLeft,
-  AlertCircle
+  AlertCircle,
+  Send
 } from "lucide-react";
 
 const VideoRoom = () => {
@@ -44,9 +44,11 @@ const VideoRoom = () => {
   const [newMessage, setNewMessage] = useState("");
   const [localAudioEnabled, setLocalAudioEnabled] = useState(true);
   const [localVideoEnabled, setLocalVideoEnabled] = useState(true);
+  const [roomCode, setRoomCode] = useState("");
+  const messagesEndRef = useRef(null);
 
+  // Clean up on unmount
   useEffect(() => {
-    // Clean up the room connection when the component unmounts
     return () => {
       if (isConnected) {
         hmsActions.leave();
@@ -54,6 +56,12 @@ const VideoRoom = () => {
     };
   }, [hmsActions, isConnected]);
 
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Fetch session details and token
   useEffect(() => {
     const fetchSessionDetails = async () => {
       if (!sessionId) {
@@ -84,7 +92,7 @@ const VideoRoom = () => {
           throw new Error("Invalid session data");
         }
 
-        // Now get a token from your token endpoint (this should be implemented on your backend)
+        // Now get a token from your token endpoint
         const tokenResponse = await fetch(`http://localhost:5000/api/video/token`, {
           method: 'POST',
           headers: {
@@ -112,8 +120,8 @@ const VideoRoom = () => {
           error: null
         });
 
-        // Join the room automatically
-        joinRoom(tokenData.token);
+        // Generate a simple room code for easier joining
+        setRoomCode(`LEARN-${sessionId.substring(0, 6)}`);
       } catch (error) {
         console.error("Error setting up video room:", error);
         setRoomConfig({
@@ -124,49 +132,35 @@ const VideoRoom = () => {
     };
 
     fetchSessionDetails();
-  }, [sessionId, user, hmsActions]);
+  }, [sessionId, user]);
 
-  // const joinRoom = async (token) => {
-  //   try {
-  //     await hmsActions.join({
-  //       authToken: token,
-  //       settings: {
-  //         isAudioMuted: false,
-  //         isVideoMuted: false
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error("Error joining room:", error);
-  //     setRoomConfig(prev => ({
-  //       ...prev,
-  //       error: "Failed to join video room: " + error.message
-  //     }));
-  //   }
-  // };
-
-
-  const joinRoom = async (token) => {
+  const joinRoom = async () => {
+    if (!roomConfig.token) {
+      setRoomConfig(prev => ({
+        ...prev,
+        error: "No token available to join the room"
+      }));
+      return;
+    }
+    
+    if (!roomCode.trim()) {
+      setRoomConfig(prev => ({
+        ...prev,
+        error: "Please enter a room code"
+      }));
+      return;
+    }
+    
     try {
-      console.log("Attempting to join room with token:", token.substring(0, 20) + "...");
+      console.log("Joining room with token and code:", roomCode);
       
-      // Check if this is our mock token format
-      if (token.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")) {
-        console.log("Using mock token for development - creating simulated video room");
-        
-        // Create simulated peers for testing
-        setTimeout(() => {
-          // In a real implementation, we would connect to the HMS API
-          console.log("Simulated room joined successfully");
-          
-          // Here you could add code to simulate a connected state if needed
-        }, 1000);
-        
-        return;
-      }
-  
-      // Real implementation for production use
+      // In a real implementation, you would use roomCode to get an auth token
+      // For now, we'll just use the token we already have
+      const authToken = await hmsActions.getAuthTokenByRoomCode({ roomCode });
+      
       await hmsActions.join({
-        authToken: token,
+        authToken: authToken || roomConfig.token,
+        userName: user.name,
         settings: {
           isAudioMuted: false,
           isVideoMuted: false
@@ -220,14 +214,19 @@ const VideoRoom = () => {
     }
   };
 
+  // Loading state
   if (roomConfig.isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow-lg flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+          <p className="text-gray-600">Setting up your video session...</p>
+        </div>
       </div>
     );
   }
 
+  // Error state
   if (roomConfig.error) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
@@ -271,9 +270,68 @@ const VideoRoom = () => {
     );
   }
 
-  const isMockSession = roomConfig.token && roomConfig.token.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9");
+  // Join form when not connected
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+          <button 
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+            onClick={() => navigate(-1)}
+          >
+            <ChevronLeft className="w-5 h-5 mr-1" />
+            Back
+          </button>
+          
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">{roomConfig.name}</h2>
+          
+          <div className="mb-6">
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Room Code
+              </label>
+              <input
+                type="text"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                placeholder="Enter room code"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Enter the room code provided by the session host
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={user.name}
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100"
+                disabled
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                You'll join as {user.role === "tutor" ? "a tutor" : "a student"}
+              </p>
+            </div>
+          </div>
+          
+          <button
+            onClick={joinRoom}
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
+            disabled={!roomCode.trim()}
+          >
+            <Video className="w-5 h-5 mr-2" />
+            Join Video Session
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  
+  // Connected view
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
@@ -288,8 +346,8 @@ const VideoRoom = () => {
           <h1 className="text-lg font-semibold">{roomConfig.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            {isConnected ? "Connected" : "Connecting..."}
+          <span className="text-sm px-2 py-1 bg-green-100 text-green-600 rounded-full">
+            Connected
           </span>
           <button
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -311,9 +369,20 @@ const VideoRoom = () => {
         {/* Video grid */}
         <div className={`flex-1 p-4 ${chatOpen || participantsOpen ? 'lg:pr-80' : ''}`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-            {peers.map((peer) => (
-              <VideoTile key={peer.id} peer={peer} />
-            ))}
+            {peers && peers.length > 0 ? (
+              peers.map((peer) => (
+                <VideoTile key={peer.id} peer={peer} />
+              ))
+            ) : (
+              <div className="col-span-2 flex items-center justify-center h-full">
+                <div className="text-center p-8 bg-white rounded-lg shadow-sm">
+                  <h3 className="text-xl font-medium text-gray-800 mb-3">Waiting for others to join...</h3>
+                  <p className="text-gray-600">
+                    Share the room code with others to invite them to this session.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -323,7 +392,10 @@ const VideoRoom = () => {
             {/* Panel Header */}
             <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
               <h2 className="font-medium">
-                {chatOpen ? "Chat" : "Participants"}
+                {chatOpen ? "Chat" : "Participants"} 
+                {participantsOpen && peers && (
+                  <span className="ml-2 text-sm text-gray-500">({peers.length})</span>
+                )}
               </h2>
               <button
                 onClick={() => {
@@ -341,32 +413,36 @@ const VideoRoom = () => {
               {chatOpen && (
                 <div className="flex flex-col h-full">
                   <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-                    {messages.length > 0 ? (
+                    {messages && messages.length > 0 ? (
                       messages.map((msg, index) => (
-                        <div key={index} className="break-words">
-                          <span className="font-medium text-indigo-600">{msg.senderName}: </span>
-                          <span>{msg.message}</span>
+                        <div key={index} className={`p-3 rounded-lg max-w-[85%] ${msg.senderName === user.name ? 'bg-indigo-100 ml-auto' : 'bg-gray-100'}`}>
+                          <div className="font-medium text-sm text-indigo-600">{msg.senderName}</div>
+                          <div className="text-gray-800">{msg.message}</div>
+                          <div className="text-xs text-gray-500 text-right mt-1">
+                            {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
                       ))
                     ) : (
                       <p className="text-gray-500 text-center pt-8">
-                        No messages yet
+                        No messages yet. Start the conversation!
                       </p>
                     )}
+                    <div ref={messagesEndRef} />
                   </div>
                 </div>
               )}
 
-              {participantsOpen && (
+              {participantsOpen && peers && (
                 <div className="space-y-3">
                   {peers.map((peer) => (
-                    <div key={peer.id} className="flex items-center justify-between">
+                    <div key={peer.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mr-2">
+                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mr-3">
                           {peer.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{peer.name}</p>
+                          <p className="font-medium text-gray-800">{peer.name}</p>
                           <p className="text-xs text-gray-500">
                             {peer.roleName === "tutor" ? "Tutor" : "Student"}
                             {peer.isLocal ? " (You)" : ""}
@@ -394,31 +470,28 @@ const VideoRoom = () => {
                 </div>
               )}
             </div>
-            {/*todo: idk if it goes here */}
-            {isMockSession ? "Mock Session Active" : (isConnected ? "Connected" : "Connecting...")}
+
             {/* Chat Input */}
             {chatOpen && (
               <div className="p-3 border-t border-gray-200">
-                <div className="flex space-x-2">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  sendChatMessage();
+                }} className="flex space-x-2">
                   <input
                     type="text"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        sendChatMessage();
-                      }
-                    }}
                   />
                   <button
-                    onClick={sendChatMessage}
+                    type="submit"
                     className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                   >
-                    Send
+                    <Send className="w-5 h-5" />
                   </button>
-                </div>
+                </form>
               </div>
             )}
           </div>
@@ -435,6 +508,7 @@ const VideoRoom = () => {
                 ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
                 : "bg-red-100 text-red-600 hover:bg-red-200"
             } transition-colors`}
+            title={localAudioEnabled ? "Mute microphone" : "Unmute microphone"}
           >
             {localAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
           </button>
@@ -446,6 +520,7 @@ const VideoRoom = () => {
                 ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
                 : "bg-red-100 text-red-600 hover:bg-red-200"
             } transition-colors`}
+            title={localVideoEnabled ? "Turn off camera" : "Turn on camera"}
           >
             {localVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </button>
@@ -453,6 +528,7 @@ const VideoRoom = () => {
           <button
             onClick={leaveRoom}
             className="p-3 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+            title="Leave session"
           >
             <PhoneOff className="w-5 h-5" />
           </button>
