@@ -5,11 +5,13 @@ import {
   sendMessage,
   markMessagesAsRead,
   getUnreadMessageCount,
-  getUserConversations
+  getUserConversations,
+  deleteSessionMessages,
+  clearConversation
 } from '../controllers/messages.controller.js'
 
 // Import auth middleware
-import { protect } from "../middlewares/auth.middleware.js"
+import { protect,authorize } from "../middlewares/auth.middleware.js"
 
 const messageRouter = express.Router()
 
@@ -33,5 +35,7 @@ messageRouter.get('/unread', getUnreadMessageCount)
 
 // Get user conversations
 messageRouter.get('/conversations', getUserConversations)
+messageRouter.delete('/session/:sessionId', deleteSessionMessages);
+messageRouter.delete('/:userId/clear', clearConversation);
 
 export default messageRouter

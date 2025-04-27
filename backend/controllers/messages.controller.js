@@ -285,6 +285,61 @@ export const sendMessage = async (req, res) => {
     }
   };
 
+  // New function in backend/controllers/messages.controller.js
+
+// @desc    Delete all messages for a session
+// @route   DELETE /api/messages/session/:sessionId
+// @access  Private/Tutor & Admin
+export const deleteSessionMessages = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    // Validate sessionId
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session ID is required'
+      });
+    }
+    
+    // Find session to verify authorization
+    const session = await Session.findById(sessionId);
+    
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+    
+    // Check if user is authorized (tutor of the session or admin)
+    if (session.tutor.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Not authorized to delete these messages'
+      });
+    }
+    
+    // Delete all messages for this session
+    const result = await Message.deleteMany({ session: sessionId });
+    
+    console.log(`Deleted ${result.deletedCount} messages for session ${sessionId}`);
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        deletedCount: result.deletedCount
+      }
+    });
+  } catch (err) {
+    console.error("Error deleting session messages:", err);
+    return res.status(500).json({
+      success: false,
+      error: 'Server Error'
+    });
+  }
+};
+
 // @desc    Mark messages as read
 // @route   PUT /api/messages/read/:userId
 // @access  Private
@@ -438,6 +493,47 @@ export const getUserConversations = async (req, res) => {
   } catch (err) {
     console.error("Error in getUserConversations:", err);
     res.status(500).json({
+      success: false,
+      error: 'Server Error'
+    });
+  }
+};
+
+// @desc    Clear all messages between two users
+// @route   DELETE /api/messages/:userId/clear
+// @access  Private
+export const clearConversation = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const otherUserId = req.params.userId;
+    
+    // Validate userId
+    if (!otherUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+    
+    // Delete all messages between these users
+    const result = await Message.deleteMany({
+      $or: [
+        { sender: currentUserId, receiver: otherUserId },
+        { sender: otherUserId, receiver: currentUserId }
+      ]
+    });
+    
+    console.log(`Deleted ${result.deletedCount} messages between users ${currentUserId} and ${otherUserId}`);
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        deletedCount: result.deletedCount
+      }
+    });
+  } catch (err) {
+    console.error("Error clearing conversation:", err);
+    return res.status(500).json({
       success: false,
       error: 'Server Error'
     });

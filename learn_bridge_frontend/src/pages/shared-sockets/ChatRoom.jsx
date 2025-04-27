@@ -206,19 +206,43 @@ const ChatRoom = () => {
     }
   }, [dispatch, userId, user._id])
 
-  const handleEndChat = () => {
+  // Modify the handleEndChat function in learn_bridge_frontend/src/pages/shared-sockets/ChatRoom.jsx
+
+const handleEndChat = async () => {
+  try {
+    // First, try to clear messages for this conversation
+    if (userId) {
+      const deleteResponse = await fetch(`${BASE_URL}/messages/${userId}/clear`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      
+      if (deleteResponse.ok) {
+        console.log(`Successfully cleared messages for conversation with ${userId}`);
+      } else {
+        console.error(`Failed to clear messages for conversation with ${userId}`);
+      }
+    }
+    
     // Clean up socket connection
     if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("leaveConversation", userId)
-      console.log(`Ending chat with user ${userId}`)
+      socketRef.current.emit("leaveConversation", userId);
+      console.log(`Ending chat with user ${userId}`);
     }
 
     // Update Redux state
-    dispatch(setCurrentChat(null))
+    dispatch(setCurrentChat(null));
 
     // Navigate back
-    navigate(-1)
+    navigate(-1);
+  } catch (error) {
+    console.error("Error ending chat:", error);
+    // Still navigate back even if there's an error
+    navigate(-1);
   }
+};
 
   // Setup socket listeners
   const setupSocketListeners = () => {

@@ -126,8 +126,45 @@ const VideoRoom = () => {
     fetchSessionDetails();
   }, [sessionId, user, hmsActions]);
 
+  // const joinRoom = async (token) => {
+  //   try {
+  //     await hmsActions.join({
+  //       authToken: token,
+  //       settings: {
+  //         isAudioMuted: false,
+  //         isVideoMuted: false
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error("Error joining room:", error);
+  //     setRoomConfig(prev => ({
+  //       ...prev,
+  //       error: "Failed to join video room: " + error.message
+  //     }));
+  //   }
+  // };
+
+
   const joinRoom = async (token) => {
     try {
+      console.log("Attempting to join room with token:", token.substring(0, 20) + "...");
+      
+      // Check if this is our mock token format
+      if (token.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")) {
+        console.log("Using mock token for development - creating simulated video room");
+        
+        // Create simulated peers for testing
+        setTimeout(() => {
+          // In a real implementation, we would connect to the HMS API
+          console.log("Simulated room joined successfully");
+          
+          // Here you could add code to simulate a connected state if needed
+        }, 1000);
+        
+        return;
+      }
+  
+      // Real implementation for production use
       await hmsActions.join({
         authToken: token,
         settings: {
@@ -234,6 +271,9 @@ const VideoRoom = () => {
     );
   }
 
+  const isMockSession = roomConfig.token && roomConfig.token.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9");
+
+  
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
@@ -354,7 +394,8 @@ const VideoRoom = () => {
                 </div>
               )}
             </div>
-
+            {/*todo: idk if it goes here */}
+            {isMockSession ? "Mock Session Active" : (isConnected ? "Connected" : "Connecting...")}
             {/* Chat Input */}
             {chatOpen && (
               <div className="p-3 border-t border-gray-200">

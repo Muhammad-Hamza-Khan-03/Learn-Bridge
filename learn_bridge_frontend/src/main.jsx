@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./redux";
 
+import { HMSRoomProvider } from '@100mslive/react-sdk';
+
 import './index.css'
 import App from './App.jsx'
 
@@ -83,10 +85,12 @@ if (token) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <HMSRoomProvider>
     <BrowserRouter>
       <Provider store={store}>
         <App />
       </Provider>
     </BrowserRouter>
+    </HMSRoomProvider>
   </StrictMode>
 );

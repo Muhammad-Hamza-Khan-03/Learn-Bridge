@@ -52,13 +52,7 @@ const StudentCard = ({ student }) => {
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4">
-          <Link
-            to={`/tutor/student/${student._id}`}
-            className="flex-1 bg-white border border-[#3B82F6] text-[#3B82F6] py-2 px-4 rounded-lg text-sm font-medium hover:bg-[#3B82F6] hover:bg-opacity-5 transition-colors flex items-center justify-center"
-          >
-            <User className="w-4 h-4 mr-2" />
-            View Profile
-          </Link>
+          
           <Link
             to={`/tutor/schedule/${student._id}`}
             className="flex-1 bg-[#3B82F6] text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors flex items-center justify-center"

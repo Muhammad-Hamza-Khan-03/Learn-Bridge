@@ -24,17 +24,37 @@ import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
 import ChatRoom from './pages/shared-sockets/ChatRoom'
 import VideoRoom from './pages/shared-sockets/VideoRoom'
-import HMSProvider from './components/video/HMSProvider'
+
+import JoinForm from './pages/shared-sockets/joinform'
+import { useEffect } from "react";
+import {
+  selectIsConnectedToRoom,
+  useHMSActions,
+  useHMSStore
+} from "@100mslive/react-sdk";
 
 export default function App() {
+
+  const hmsActions = useHMSActions();
+  const isConnected = useHMSStore(selectIsConnectedToRoom);
+  
+  useEffect(() => {
+    window.onunload = () => {
+      if (isConnected) {
+        hmsActions.leave();
+      }
+    };
+  }, [hmsActions, isConnected]);
+
+
 
   return (
     <ThemeProvider>
       <ToastProvider>
-      <HMSProvider>
+      
         <Routes>
           {/* todo: if its authenticated then direct to dashboard page */}
-          <Route path="/" element={<AppWithTheme />} />
+          {/* <Route path="/" element={<AppWithTheme />} /> */}
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -92,12 +112,25 @@ export default function App() {
           />
           {/* shared */}
           <Route path="/chat/:userId" element={<ChatRoom />} />
+          
           <Route path="/video/:sessionId" element={<VideoRoom />} />
           {/* none */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
-</HMSProvider>
+
+        <div className="App">
+      {/* <Header /> */}
+      {isConnected ? (
+        <>
+          <Conference />
+          <Footer />
+        </>
+      ) : (
+        <JoinForm />
+      )}
+    </div>
+
       </ToastProvider>
     </ThemeProvider>
   )

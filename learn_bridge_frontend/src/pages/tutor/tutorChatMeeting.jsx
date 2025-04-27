@@ -86,6 +86,41 @@ const TutorMeetings = () => {
     setRefreshCount((prev) => prev + 1)
   }
 
+  // const handleStatusChange = async (sessionId, status) => {
+  //   if (status === "addLink") {
+  //     openLinkModal(sessionId)
+  //     return
+  //   }
+  
+  //   setStatusUpdating(sessionId)
+  
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/sessions/${sessionId}`, {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //       body: JSON.stringify({ status }),
+  //     })
+  
+  //     if (!response.ok) {
+  //       throw new Error("Failed to update session status")
+  //     }
+  
+  //     const updatedSession = await response.json()
+  //     dispatch(updateSession(updatedSession.data))
+  
+  //     // Refresh the sessions
+  //     handleRefresh()
+  //   } catch (err) {
+  //     console.error("Error updating status:", err)
+  //     setLocalError("Failed to update session status. Please try again.")
+  //   } finally {
+  //     setStatusUpdating(null)
+  //   }
+  // }
+
   const handleStatusChange = async (sessionId, status) => {
     if (status === "addLink") {
       openLinkModal(sessionId)
@@ -95,6 +130,7 @@ const TutorMeetings = () => {
     setStatusUpdating(sessionId)
   
     try {
+      // First update the session status
       const response = await fetch(`${BASE_URL}/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
@@ -111,6 +147,30 @@ const TutorMeetings = () => {
       const updatedSession = await response.json()
       dispatch(updateSession(updatedSession.data))
   
+      // If the session is marked as completed, delete the associated chat messages
+      if (status === "completed") {
+        try {
+          console.log(`Session ${sessionId} is completed. Deleting associated chat messages...`);
+          
+          const deleteResponse = await fetch(`${BASE_URL}/messages/session/${sessionId}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            }
+          });
+          
+          if (deleteResponse.ok) {
+            const deleteData = await deleteResponse.json();
+            console.log(`Successfully deleted ${deleteData.data.deletedCount} messages for session ${sessionId}`);
+          } else {
+            console.error(`Failed to delete messages for session ${sessionId}`);
+          }
+        } catch (deleteError) {
+          console.error("Error deleting session messages:", deleteError);
+          // Don't fail the entire operation if message deletion fails
+        }
+      }
+  
       // Refresh the sessions
       handleRefresh()
     } catch (err) {
@@ -120,7 +180,7 @@ const TutorMeetings = () => {
       setStatusUpdating(null)
     }
   }
-
+  
   const handleAddMeetingLink = async () => {
     if (meetingLinkData.meetingLink.trim()) {
       try {
