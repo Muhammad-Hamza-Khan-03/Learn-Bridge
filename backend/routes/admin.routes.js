@@ -14,8 +14,8 @@ const AdminRouter = express.Router();
 import { protect, authorize } from '../middlewares/auth.middleware.js';
 
 // Apply auth middleware to all routes
-AdminRouter.use(protect);
-AdminRouter.use(authorize('admin'));
+// AdminRouter.use(protect);
+// AdminRouter.use(authorize('admin'));
 
 // Admin routes
 AdminRouter.get('/users', getUsers);

@@ -11,12 +11,8 @@ import {
 } from "../../redux/slices/adminSlice";
 import ErrorAlert from "../../components/ui/Error-Alert";
 import { LoaderCircle } from "lucide-react";
-// Import Plotly correctly
-import Plotly from 'plotly.js-basic-dist';
-import createPlotlyComponent from 'react-plotly.js/factory';
 
-// Create the Plot component
-const Plot = createPlotlyComponent(Plotly);
+import Plot from 'react-plotly.js';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -507,7 +503,7 @@ const AdminDashboard = () => {
 
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <LoadingSpinner />
+              <LoaderCircle className="animate-spin" />
             </div>
           ) : (
             <>
@@ -700,13 +696,13 @@ const AdminDashboard = () => {
             Completed
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${sessionFilter === "cancelled" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"} border-t border-b border-r border-gray-300 rounded-r-lg focus:z-10 focus:ring-2 focus:ring-blue-500 focus:text-blue-700`}
+            className={`px-4 py-2 text-sm font-medium ${sessionFilter === "rejected" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"} border-t border-b border-r border-gray-300 rounded-r-lg focus:z-10 focus:ring-2 focus:ring-blue-500 focus:text-blue-700`}
             onClick={() => {
-              setSessionFilter("cancelled");
+              setSessionFilter("rejected");
               setCurrentPage(1);
             }}
           >
-            Cancelled
+            Rejected
           </button>
         </div>
       </div>
@@ -746,7 +742,7 @@ const AdminDashboard = () => {
 
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <LoadingSpinner />
+              <LoaderCircle className="animate-spin" />
             </div>
           ) : (
             <>
@@ -936,7 +932,7 @@ const AdminDashboard = () => {
 
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <LoadingSpinner />
+              <LoaderCircle className="animate-spin" />
             </div>
           ) : (
             <>
@@ -1073,20 +1069,7 @@ const AdminDashboard = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
-        <div className="flex gap-2 mt-4 md:mt-0">
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-            Export Data
-          </button>
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-            </svg>
-            Settings
-          </button>
-        </div>
+        
       </div>
 
       {error && (
