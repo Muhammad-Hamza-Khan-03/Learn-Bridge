@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { 
-  setUsers, 
-  setLoading, 
-  setError, 
-  updateUser, 
-  deleteUserById 
+import {
+  setUsers,
+  setLoading,
+  setError,
+  updateUser,
+  deleteUserById
 } from "../../redux/slices/adminSlice";
-import  {LoaderCircle}  from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import ErrorAlert from "../../components/ui/ErrorAlert";
 
 const AdminUserManagement = () => {
@@ -57,7 +57,12 @@ const AdminUserManagement = () => {
   const fetchAdminUsers = async () => {
     try {
       dispatch(setLoading(true));
-      const response = await fetch("http://localhost:5000/api/admin/users?role=admin");
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/admin/users?role=admin", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
       dispatch(setUsers(data.data || data));
     } catch (err) {
@@ -81,7 +86,7 @@ const AdminUserManagement = () => {
       const updatedPermissions = prev.permissions.includes(permission)
         ? prev.permissions.filter(p => p !== permission)
         : [...prev.permissions, permission];
-      
+
       return {
         ...prev,
         permissions: updatedPermissions
@@ -154,9 +159,9 @@ const AdminUserManagement = () => {
         },
         body: JSON.stringify(adminData),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccessMessage("Admin user created successfully!");
         closeModals();
@@ -176,7 +181,7 @@ const AdminUserManagement = () => {
   const handleUpdateAdmin = async (e) => {
     e.preventDefault();
     if (!selectedUser) return;
-    
+
     setIsSubmitting(true);
     setLocalError(null);
 
@@ -202,18 +207,19 @@ const AdminUserManagement = () => {
       if (formData.password) {
         updateData.password = formData.password;
       }
-
+      const token = localStorage.getItem("token");
       // Send request to update admin
       const response = await fetch(`http://localhost:5000/api/admin/users/${selectedUser._id}`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updateData),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccessMessage("Admin user updated successfully!");
         closeModals();
@@ -234,16 +240,18 @@ const AdminUserManagement = () => {
   // Toggle admin status (active/inactive)
   const handleToggleStatus = async (userId, currentStatus) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ isActive: !currentStatus }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccessMessage(`Admin status ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
         // Update user in Redux store
@@ -258,19 +266,59 @@ const AdminUserManagement = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
+    try {
+      dispatch(setLoading(true));
+
+      // Get token from local storage
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Remove user from Redux store
+        dispatch(deleteUserById(userId));
+        // Refresh user list
+        fetchUsers();
+        alert("User deleted successfully!");
+      } else {
+        throw new Error(data.error || "Failed to delete user");
+      }
+    } catch (err) {
+      dispatch(setError(err.message || "Failed to delete user"));
+      alert(err.message || "Failed to delete user");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   // Delete admin
   const handleDeleteAdmin = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this admin user?")) {
       return;
     }
-
+    const token = localStorage.getItem("token");
     try {
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         method: 'DELETE',
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccessMessage("Admin user deleted successfully!");
         // Remove user from Redux store
@@ -286,7 +334,7 @@ const AdminUserManagement = () => {
   };
 
   // Filter admins by search term
-  const filteredAdmins = adminUsers.filter(admin => 
+  const filteredAdmins = adminUsers.filter(admin =>
     admin.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -295,7 +343,7 @@ const AdminUserManagement = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Admin User Management</h2>
-        <button 
+        <button
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
           onClick={openCreateModal}
         >
@@ -315,14 +363,14 @@ const AdminUserManagement = () => {
       {successMessage && (
         <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
           <span className="block sm:inline">{successMessage}</span>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="absolute top-0 bottom-0 right-0 px-4 py-3"
             onClick={() => setSuccessMessage(null)}
           >
             <svg className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
               <title>Close</title>
-              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
             </svg>
           </button>
         </div>
@@ -383,13 +431,12 @@ const AdminUserManagement = () => {
                           <div className="text-sm text-gray-500">{admin.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            admin.adminLevel === 'super' 
-                              ? 'bg-red-100 text-red-800' 
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.adminLevel === 'super'
+                              ? 'bg-red-100 text-red-800'
                               : admin.adminLevel === 'senior'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-blue-100 text-blue-800'
-                          }`}>
+                            }`}>
                             {admin.adminLevel || 'junior'}
                           </span>
                         </td>
@@ -440,8 +487,8 @@ const AdminUserManagement = () => {
                   ) : (
                     <tr>
                       <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                        {searchTerm 
-                          ? "No admin users found matching your search" 
+                        {searchTerm
+                          ? "No admin users found matching your search"
                           : "No admin users found"}
                       </td>
                     </tr>
@@ -472,7 +519,7 @@ const AdminUserManagement = () => {
                           <span className="block sm:inline">{localError}</span>
                         </div>
                       )}
-                      
+
                       <form onSubmit={handleCreateAdmin} className="space-y-4">
                         <div>
                           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
@@ -486,7 +533,7 @@ const AdminUserManagement = () => {
                             required
                           />
                         </div>
-                        
+
                         <div>
                           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
                           <input
@@ -499,7 +546,7 @@ const AdminUserManagement = () => {
                             required
                           />
                         </div>
-                        
+
                         <div>
                           <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                           <input
@@ -512,7 +559,7 @@ const AdminUserManagement = () => {
                             required
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
@@ -525,7 +572,7 @@ const AdminUserManagement = () => {
                               onChange={handleChange}
                             />
                           </div>
-                          
+
                           <div>
                             <label htmlFor="adminLevel" className="block text-sm font-medium text-gray-700">Admin Level</label>
                             <select
@@ -541,7 +588,7 @@ const AdminUserManagement = () => {
                             </select>
                           </div>
                         </div>
-                        
+
                         <div>
                           <label htmlFor="bio" className="block text-sm font-medium text-gray-700">Bio</label>
                           <textarea
@@ -553,7 +600,7 @@ const AdminUserManagement = () => {
                             onChange={handleChange}
                           ></textarea>
                         </div>
-                        
+
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
                           <div className="space-y-2">
@@ -569,7 +616,7 @@ const AdminUserManagement = () => {
                                 User Management
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -582,7 +629,7 @@ const AdminUserManagement = () => {
                                 Content Moderation
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -595,7 +642,7 @@ const AdminUserManagement = () => {
                                 Platform Analytics
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -616,8 +663,8 @@ const AdminUserManagement = () => {
                 </div>
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={handleCreateAdmin}
                   disabled={isSubmitting}
@@ -634,8 +681,8 @@ const AdminUserManagement = () => {
                     "Create Admin"
                   )}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={closeModals}
                 >
@@ -666,7 +713,7 @@ const AdminUserManagement = () => {
                           <span className="block sm:inline">{localError}</span>
                         </div>
                       )}
-                      
+
                       <form onSubmit={handleUpdateAdmin} className="space-y-4">
                         <div>
                           <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">Name</label>
@@ -680,7 +727,7 @@ const AdminUserManagement = () => {
                             required
                           />
                         </div>
-                        
+
                         <div>
                           <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700">Email</label>
                           <input
@@ -693,7 +740,7 @@ const AdminUserManagement = () => {
                             required
                           />
                         </div>
-                        
+
                         <div>
                           <label htmlFor="edit-password" className="block text-sm font-medium text-gray-700">
                             Password (leave blank to keep current password)
@@ -707,7 +754,7 @@ const AdminUserManagement = () => {
                             onChange={handleChange}
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="edit-country" className="block text-sm font-medium text-gray-700">Country</label>
@@ -720,7 +767,7 @@ const AdminUserManagement = () => {
                               onChange={handleChange}
                             />
                           </div>
-                          
+
                           <div>
                             <label htmlFor="edit-adminLevel" className="block text-sm font-medium text-gray-700">Admin Level</label>
                             <select
@@ -737,7 +784,7 @@ const AdminUserManagement = () => {
                             </select>
                           </div>
                         </div>
-                        
+
                         <div>
                           <label htmlFor="edit-bio" className="block text-sm font-medium text-gray-700">Bio</label>
                           <textarea
@@ -749,7 +796,7 @@ const AdminUserManagement = () => {
                             onChange={handleChange}
                           ></textarea>
                         </div>
-                        
+
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
                           <div className="space-y-2">
@@ -766,7 +813,7 @@ const AdminUserManagement = () => {
                                 User Management
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -780,7 +827,7 @@ const AdminUserManagement = () => {
                                 Content Moderation
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -794,7 +841,7 @@ const AdminUserManagement = () => {
                                 Platform Analytics
                               </label>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <input
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -816,8 +863,8 @@ const AdminUserManagement = () => {
                 </div>
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={handleUpdateAdmin}
                   disabled={isSubmitting}
@@ -834,8 +881,8 @@ const AdminUserManagement = () => {
                     "Update Admin"
                   )}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={closeModals}
                 >

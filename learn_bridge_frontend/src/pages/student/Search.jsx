@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { SearchIcon, Filter, BookOpen, X, Star, MapPin, Clock, Award } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
-import { mockApi } from "../../mock/mockApi"
+
 import { setTutors, setLoading, setError } from "../../redux/slices/UserSlice"
 
 const BASE_URL = "http://localhost:5000/api"
@@ -370,15 +370,7 @@ const Search = () => {
           <h2 className="text-lg font-semibold text-gray-800">
             {isLoading ? "Searching..." : `${filteredTutors.length} Results`}
           </h2>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-2">Sort by:</span>
-            <select className="text-sm border-0 focus:ring-0 text-gray-700 font-medium">
-              <option>Relevance</option>
-              <option>Highest Rated</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </select>
-          </div>
+          
         </div>
 
         {isLoading ? (

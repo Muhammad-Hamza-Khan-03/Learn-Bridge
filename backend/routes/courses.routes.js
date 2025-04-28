@@ -21,8 +21,8 @@ Coursesrouter.get('/:id', getCourse);
 
 // Protected routes
 Coursesrouter.post('/', protect, authorize('tutor') ,createCourse);
-Coursesrouter.put('/:id', protect, authorize('tutor'), updateCourse);
-Coursesrouter.delete('/:id', protect, authorize('tutor'), deleteCourse);
+Coursesrouter.put('/:id', protect, authorize('admin','tutor'), updateCourse);
+Coursesrouter.delete('/:id', protect, authorize('admin','tutor'), deleteCourse);
 
 // Student routes
 Coursesrouter.put('/:id/enroll', protect, authorize('student'),  enrollCourse);

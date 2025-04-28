@@ -11,7 +11,7 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
     { name: "Search", icon: Search, path: "/student/search" },
     { name: "Meetings", icon: Video, path: "/student/meetings" },
     { name: "Reviews", icon: Star, path: "/student/reviews" },
-    { name: "Profile", icon: Settings, path: "/profile" },
+    { name: "Profile", icon: Settings, path: "/student/profile" },
   ];
 
   const tutorNavItems = [
@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
     { name: "My Courses", icon: BookOpen, path: "/tutor/catalog" },
     { name: "Upcoming Sessions", icon: Calendar, path: "/tutor/meetings" },
     { name: "Find Students", icon: Search, path: "/tutor/search" },
-    { name: "Profile", icon: Settings, path: "/profile" },
+    { name: "Profile", icon: Settings, path: "/tutor/profile" },
   ];
 
   const adminNavItems = [

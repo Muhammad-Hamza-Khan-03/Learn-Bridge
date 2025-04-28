@@ -15,17 +15,6 @@ const store = configureStore({
     chat: chatReducer,
     admin: adminReducer,
   },
-  // middleware: (getDefaultMiddleware) =>
-  //   getDefaultMiddleware({
-  //     serializableCheck: {
-  //       // Ignore these action types
-  //       ignoredActions: ["chat/connectSocket/fulfilled"],
-  //       // Ignore these field paths in all actions
-  //       ignoredActionPaths: ["payload.socket", "meta.arg.socket"],
-  //       // Ignore these paths in the state
-  //       ignoredPaths: ["chat.socket"],
-  //     },
-  //   }),
-})
+ })
 
 export default store

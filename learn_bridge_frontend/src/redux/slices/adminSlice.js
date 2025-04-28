@@ -51,9 +51,7 @@ const adminSlice = createSlice({
       state.courses = action.payload;
       state.isLoading = false;
     },
-    setPagination: (state, action) => {
-      state.pagination = action.payload;
-    },
+    
     updateUser: (state, action) => {
       state.users = state.users.map((user) => 
         user._id === action.payload._id ? action.payload : user

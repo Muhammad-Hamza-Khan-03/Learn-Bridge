@@ -24,7 +24,7 @@ import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
 import ChatRoom from './pages/shared-sockets/ChatRoom'
 import VideoRoom from './pages/shared-sockets/VideoRoom'
-
+import ProtectedAdminRoute from './pages/admin/ProtectAdmin'
 // import JoinForm from './pages/shared-sockets/joinform'
 import { useEffect } from "react";
 import {
@@ -33,12 +33,13 @@ import {
   useHMSStore
 } from "@100mslive/react-sdk";
 import AdminDashboard from './pages/admin/AdminDashboard'
+import ProtectedRoute from './pages/admin/ProtectAdmin'
 
 export default function App() {
 
   const hmsActions = useHMSActions();
   const isConnected = useHMSStore(selectIsConnectedToRoom);
-  
+
   useEffect(() => {
     window.onunload = () => {
       if (isConnected) {
@@ -52,13 +53,14 @@ export default function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-      
+
         <Routes>
-          {/* todo: if its authenticated then direct to dashboard page */}
           <Route path="/" element={<AppWithTheme />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          
+          
           <Route path="/student" element={<StudentLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
@@ -84,9 +86,14 @@ export default function App() {
               element={
                 <SessionReview />
               } />
-          </Route>
+              <Route path="profile" element={<UserProfile />}/>
+
+
+          </Route>    
+          
           {/* TUtor */}
           <Route path="/tutor" element={<TutorLayout />}>
+
             <Route index element={<Navigate to="/tutor/dashboard" replace />} />
             <Route path="/tutor/dashboard" element={<TutorDashboard />} />
             <Route path="/tutor/catalog" element={<TutorCatalog />} />
@@ -98,29 +105,28 @@ export default function App() {
                 <OfferSession />
               }
 
+
             />
 
             <Route path="/tutor/meetings" element={<TutorMeetings />} />
-          </Route>
-
-
-          <Route
-            path="/profile"
-            element={
-              <UserProfile />
-
-            }
+            <Route path="profile" element={<UserProfile />}
           />
 
-<Route
-              path="/admin/dashboard"
-              element={
-                  <AdminDashboard />
-                }
-            />
+          </Route>
+          
+          <Route
+            path="/admin/dashboard"
+            element={
+
+              <ProtectedRoute>
+                <AdminDashboard />
+
+              </ProtectedRoute>}
+          />
+
           {/* shared */}
           <Route path="/chat/:userId" element={<ChatRoom />} />
-          
+
           <Route path="/video/:sessionId" element={<VideoRoom />} />
           {/* none */}
           <Route path="*" element={<Navigate to="/" replace />} />

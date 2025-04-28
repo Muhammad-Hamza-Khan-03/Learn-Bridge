@@ -227,7 +227,6 @@ export const logout = async (req, res) => {
     });
   };
 
-  //todo: /api/auth/updatepassword
   export const updatePassword = async (req, res) => {
     try {
       const user = await User.findById(req.user.id).select('+password');

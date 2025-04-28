@@ -358,6 +358,18 @@ const removeAvailability = (role, index) => {
                   >
                     Teacher
                   </button>
+                  <button
+      onClick={() => setFormData({ ...formData, role: "admin" })}
+      className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${
+        role === "admin"
+          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+          : theme === "dark"
+          ? "text-gray-300 hover:text-white"
+          : "text-gray-600 hover:text-gray-900"
+      }`}
+    >
+      Admin
+    </button>
                 </div>
               </div>
 
@@ -844,7 +856,21 @@ const removeAvailability = (role, index) => {
                     </div>
                   </div>
                 )}
+{role === "admin" && (
+  <div
+    className={`mt-8 p-6 rounded-lg ${theme === "dark" ? "bg-gray-700/50 border border-gray-600" : "bg-gray-50 border border-gray-200"}`}
+  >
+    <h3 className={`text-xl font-bold mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}>
+      Admin Information
+    </h3>
 
+    <div className="space-y-4">
+      <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+        Admin accounts have access to manage users, courses, and platform settings.
+      </p>
+    </div>
+  </div>
+)}
                 {/* Submit Button */}
                 <button
                   type="submit"

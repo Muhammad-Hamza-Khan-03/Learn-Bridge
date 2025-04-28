@@ -10,32 +10,25 @@ import {getUsers,
     getStudentProfile}
     from "../controllers/users.controller.js"
 
+import { protect,authorize } from "../middlewares/auth.middleware.js";
 
 const userRouter = express.Router()
 
-// todo: protect
+userRouter.get('/', protect, authorize('admin'), getUsers);
+userRouter.get('/:id', protect, authorize('admin'), getUser);
 
-
-// Admin routes todo: uncomment
-// router.get('/', protect, authorize('admin'), getUsers);
-// router.get('/:id', protect, authorize('admin'), getUser);
-
-userRouter.get('/', getUsers);
-userRouter.get('/:id', getUser);
 
 // Profile routes
-// router.put('/profile', protect, updateProfile);
-userRouter.put('/profile', updateProfile);
+userRouter.put('/profile', protect, updateProfile);
 
 // Tutor routes
 userRouter.get('/tutors/search', searchTutors);
 userRouter.get('/tutors/:id', getTutorProfile);
-// router.put('/tutors/availability', protect, authorize('tutor'), updateTutorAvailability);
-userRouter.put('/tutors/availability', updateTutorAvailability);
+userRouter.put('/tutors/availability', protect, authorize('tutor'), updateTutorAvailability);
 
 // Student routes
-// router.put('/students/learning-goals', protect, authorize('student'), updateLearningGoals);
-userRouter.put('/students/learning-goals', updateLearningGoals);
+userRouter.put('/students/learning-goals', protect, authorize('student'), updateLearningGoals);
+
 userRouter.get('/students/search', searchStudents);
 userRouter.get('/students/:id', getStudentProfile);
 export default userRouter

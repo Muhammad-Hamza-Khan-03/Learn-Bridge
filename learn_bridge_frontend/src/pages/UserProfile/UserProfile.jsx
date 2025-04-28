@@ -8,7 +8,7 @@ import { ToastContainer } from "../../components/ui/toast-notifications"
 const UserProfile = () => {
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
-  const { isLoading, success, error,passwordUpdateSuccess } = useSelector((state) => state.users)
+  const { isLoading } = useSelector((state) => state.users)
   const { toasts, addToast, removeToast } = useToast()
 
   const [activeTab, setActiveTab] = useState("profile")
@@ -43,7 +43,7 @@ const UserProfile = () => {
         dispatch(setLoading());
         
         const response = await fetch("http://localhost:5000/api/auth/me", {
-          method:"POST",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -102,24 +102,7 @@ const UserProfile = () => {
     }
   }, [user])
 
-  useEffect(() => {
-    if (success) {
-      addToast("Profile updated successfully!", "success")
-    }
-  }, [success, addToast])
-
-  useEffect(() => {
-    if (passwordUpdateSuccess) {
-      addToast("Password updated successfully!", "success")
-    }
-  }, [passwordUpdateSuccess, addToast])
-
-  useEffect(() => {
-    if (error) {
-      addToast(error, "error")
-    }
-  }, [error, addToast])
-
+  
   const handleProfileChange = (e) => {
     setProfileData({
       ...profileData,
@@ -273,20 +256,26 @@ const UserProfile = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
-
+  
     if (validateProfileForm()) {
-      // Prepare data based on role
+      // Prepare data based on role - only include relevant fields
       let updateData = { ...profileData }
-
+  
       if (user?.role === "student") {
         updateData = {
-          ...updateData,
+          name: profileData.name,
+          email: profileData.email,
+          country: profileData.country,
+          bio: profileData.bio,
           learningGoals: studentData.learningGoals.filter((goal) => goal.trim()),
           preferredSubjects: studentData.preferredSubjects.filter((subject) => subject.trim()),
         }
       } else if (user?.role === "tutor") {
         updateData = {
-          ...updateData,
+          name: profileData.name,
+          email: profileData.email,
+          country: profileData.country, 
+          bio: profileData.bio,
           expertise: tutorData.expertise.filter((exp) => exp.trim()),
           availability: tutorData.availability,
           hourlyRate: Number.parseFloat(tutorData.hourlyRate),
@@ -294,9 +283,8 @@ const UserProfile = () => {
           experience: Number.parseInt(tutorData.experience),
         }
       }
-
+  
       try {
-        // Set loading state in Redux
         dispatch(setLoading());
         
         const response = await fetch("http://localhost:5000/api/users/profile", {
@@ -331,13 +319,14 @@ const UserProfile = () => {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
-
+  
     if (validatePasswordForm()) {
       try {
         // Set loading state in Redux
         dispatch(setLoading());
         
-        const response = await fetch("http://localhost:5000/api/users/password", {
+        // CHANGE THIS URL to match your backend route
+        const response = await fetch("http://localhost:5000/api/auth/updatepassword", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -348,20 +337,20 @@ const UserProfile = () => {
             newPassword: passwordData.newPassword,
           }),
         })
-
+  
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to update password")
         }
-
-        // Update Redux state
+  
+        // Rest of your function remains the same
         dispatch(updateUserPassword({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
         }))
         
         dispatch(setPasswordUpdateSuccess())
-
+  
         // Reset form fields
         setPasswordData({
           currentPassword: "",
