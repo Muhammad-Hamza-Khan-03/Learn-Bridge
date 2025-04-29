@@ -20,11 +20,6 @@ const courseSlice = createSlice({
       state.isLoading = false
       state.error = null
     },
-    setCourse: (state, action) => {
-      state.course = action.payload
-      state.isLoading = false
-      state.error = null
-    },
     setTutorCourses: (state, action) => {
       state.tutorCourses = action.payload
       state.isLoading = false
@@ -52,6 +47,11 @@ const courseSlice = createSlice({
       state.isLoading = false
       state.success = true
     },
+    setCourse: (state, action) => {
+      state.course = action.payload
+      state.isLoading = false
+      state.error = null
+    },
     removeCourse: (state, action) => {
       state.courses = state.courses.filter((course) => course._id !== action.payload)
       state.tutorCourses = state.tutorCourses.filter((course) => course._id !== action.payload)
@@ -71,18 +71,13 @@ const courseSlice = createSlice({
     setError: (state, action) => {
       state.isLoading = false
       state.error = action.payload
-    },
-    reset: (state) => {
-      state.isLoading = false
-      state.error = null
-      state.success = false
-    },
+    }
   },
 })
 
 export const {
-  setCourses,
   setCourse,
+  setCourses,
   setTutorCourses,
   setStudentCourses,
   addCourse,
@@ -90,8 +85,8 @@ export const {
   removeCourse,
   addToStudentCourses,
   setLoading,
-  setError,
-  reset,
+  setError
+  
 } = courseSlice.actions
 
 export default courseSlice.reducer

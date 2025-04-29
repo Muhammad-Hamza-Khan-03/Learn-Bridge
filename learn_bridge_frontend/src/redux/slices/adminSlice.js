@@ -9,12 +9,7 @@ const initialState = {
   isLoading: false,
   error: null,
   success: false,
-  pagination: {
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  },
+  
 };
 
 const adminSlice = createSlice({
@@ -65,9 +60,7 @@ const adminSlice = createSlice({
       state.error = null;
       state.success = false;
     },
-    clearUserDetails: (state) => {
-      state.userDetails = null;
-    },
+   
   },
 });
 
@@ -80,11 +73,9 @@ export const {
   setUserDetails,
   setSessions,
   setCourses,
-  setPagination,
   updateUser,
   deleteUserById,
   resetAdminState,
-  clearUserDetails,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

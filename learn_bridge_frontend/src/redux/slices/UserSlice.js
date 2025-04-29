@@ -29,16 +29,6 @@ const userSlice = createSlice({
       state.success = true
       state.error = null
     },
-    clearSuccess(state) {
-      state.success = false
-      state.passwordUpdateSuccess = false
-    },
-    reset(state) {
-      state.isLoading = false
-      state.error = null
-      state.success = false
-      state.passwordUpdateSuccess = false
-    },
     setTutors(state, action) {
       state.tutors = action.payload
       state.isLoading = false
@@ -76,8 +66,6 @@ export const {
   setLoading,
   setError,
   setSuccess,
-  clearSuccess,
-  reset,
   setTutors,
   setStudents,
   setCurrentTutor,

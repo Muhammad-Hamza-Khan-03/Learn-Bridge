@@ -109,26 +109,7 @@ const chatSlice = createSlice({
         }
       }
     },
-    updateTypingStatus: (state, action) => {
-      const { user, isTyping } = action.payload;
-
-      // Find conversation and update typing status
-      const conversationIndex = state.conversations.findIndex(
-        (conv) => conv.user._id === user._id || conv.user === user._id
-      );
-
-      if (conversationIndex !== -1) {
-        // Create a new array with the updated conversation
-        state.conversations = [
-          ...state.conversations.slice(0, conversationIndex),
-          {
-            ...state.conversations[conversationIndex],
-            isTyping,
-          },
-          ...state.conversations.slice(conversationIndex + 1),
-        ];
-      }
-    },
+    
     markMessageReadByReceiver: (state, action) => {
       const { userId } = action.payload;
       

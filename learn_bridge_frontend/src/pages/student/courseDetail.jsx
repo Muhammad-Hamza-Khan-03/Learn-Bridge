@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { Calendar, Clock, User, ChevronLeft, Star } from "lucide-react"
-import { setCourse, setLoading, setError, updateCourseInState } from "../../redux/slices/courseSlice"
-
+import { setCourse,setLoading, setError, updateCourseInState } from "../../redux/slices/courseSlice"
+import useToastContext from "../../components/ui/toastContextProvider"
 
 const BASE_URL = "http://localhost:5000/api"
 // API endpoints
@@ -16,6 +16,7 @@ export const API_URLS = {
 
 
 const CourseDetail = () => {
+  const {addToast} = useToastContext()
   const { courseId } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -96,11 +97,11 @@ const CourseDetail = () => {
   
       const data = await response.json();
       dispatch(updateCourseInState(data.data));
-      setSuccessMessage("Successfully unenrolled from course!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      // setSuccessMessage("Successfully unenrolled from course!");
+      addToast("Successfully unenrolled from course!", "success");
     } catch (error) {
-      setErrorMessage(error.message || "Failed to unenroll from course");
-      setTimeout(() => setErrorMessage(""), 3000);
+      // setErrorMessage(error.message || "Failed to unenroll from course");
+      addToast(error.message || "Failed to unenroll from course", "error");
     } finally {
       setEnrolling(false);
     }
@@ -283,13 +284,13 @@ const CourseDetail = () => {
 
             {user?.role === "student" && (
   <button
-    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center"
+    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 cursor-text transition-colors flex items-center justify-center"
     disabled={isEnrolled || course.enrolledStudents.length >= course.maxStudents || enrolling}
     onClick={isEnrolled ? handleUnenroll : handleEnroll}
   >
     {enrolling ? (
       <>
-        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2 cursor-pointer"></div>
         {isEnrolled ? "Unenrolling..." : "Enrolling..."}
       </>
     ) : isEnrolled ? (
@@ -345,12 +346,7 @@ const CourseDetail = () => {
             </div>
        
 
-            <Link
-              to={`/tutor/${course.tutor._id}`}
-              className="block w-full text-center bg-white border border-indigo-600 text-indigo-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
-            >
-              View Profile
-            </Link>
+           
           </div>
           <Link
   to={`/student/schedule/${course.tutor._id}?course=${course._id}`}

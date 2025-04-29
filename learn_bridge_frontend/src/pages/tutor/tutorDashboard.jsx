@@ -229,46 +229,6 @@ const TutorDashboard = () => {
             </div>
           </div>
 
-          {/* Recent Activity */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 font-poppins">Recent Activity</h2>
-            </div>
-            <div className="space-y-4">
-              <div className="relative pl-6 pb-6 border-l-2 border-gray-200">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-[#3B82F6]"></div>
-                <div className="mb-1">
-                  <span className="text-sm font-medium text-gray-800">New session scheduled</span>
-                  <span className="text-xs text-gray-500 ml-2">Today, 10:30 AM</span>
-                </div>
-                <p className="text-sm text-gray-600">Math tutoring session with Alex Johnson</p>
-              </div>
-              <div className="relative pl-6 pb-6 border-l-2 border-gray-200">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-emerald-500"></div>
-                <div className="mb-1">
-                  <span className="text-sm font-medium text-gray-800">Course created</span>
-                  <span className="text-xs text-gray-500 ml-2">Yesterday</span>
-                </div>
-                <p className="text-sm text-gray-600">Created "Introduction to Physics" course</p>
-              </div>
-              <div className="relative pl-6 pb-6 border-l-2 border-gray-200">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-amber-500"></div>
-                <div className="mb-1">
-                  <span className="text-sm font-medium text-gray-800">New review received</span>
-                  <span className="text-xs text-gray-500 ml-2">2 days ago</span>
-                </div>
-                <p className="text-sm text-gray-600">Emily Parker gave you a 5-star review</p>
-              </div>
-              <div className="relative pl-6">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-[#6366F1]"></div>
-                <div className="mb-1">
-                  <span className="text-sm font-medium text-gray-800">Session completed</span>
-                  <span className="text-xs text-gray-500 ml-2">3 days ago</span>
-                </div>
-                <p className="text-sm text-gray-600">Completed English session with Michael Brown</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Column */}
@@ -282,51 +242,7 @@ const TutorDashboard = () => {
             />
           </div>
 
-          {/* Notifications */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 font-poppins">Notifications</h2>
-              <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#3B82F6] text-white">
-                {notifications.filter((n) => !n.read).length} New
-              </span>
-            </div>
-            <div className="space-y-4">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-3 rounded-lg ${notification.read ? "bg-gray-50" : "bg-[#3B82F6] bg-opacity-5 border-l-4 border-[#3B82F6]"}`}
-                >
-                  <div className="flex items-start">
-                    <div
-                      className={`p-2 rounded-full mr-3 ${
-                        notification.type === "session"
-                          ? "bg-[#3B82F6] bg-opacity-10 text-[#3B82F6]"
-                          : notification.type === "course"
-                            ? "bg-emerald-100 text-emerald-600"
-                            : "bg-amber-100 text-amber-600"
-                      }`}
-                    >
-                      {notification.type === "session" ? (
-                        <Calendar className="w-4 h-4" />
-                      ) : notification.type === "course" ? (
-                        <BookOpen className="w-4 h-4" />
-                      ) : (
-                        <Star className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-800">{notification.title}</h3>
-                      <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button className="w-full text-center text-sm text-[#3B82F6] font-medium hover:text-opacity-80 transition-colors">
-                View All Notifications
-              </button>
-            </div>
-          </div>
+         
         </div>
       </div>
 

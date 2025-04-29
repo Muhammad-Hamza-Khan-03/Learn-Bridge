@@ -89,15 +89,7 @@ const sessionSlice = createSlice({
     setError: (state, action) => {
       state.isLoading = false
       state.error = action.payload
-    },
-    reset: (state) => {
-      state.isLoading = false
-      state.error = null
-      state.success = false
-    },
-    clearCurrentSession: (state) => {
-      state.currentSession = null
-    },
+    }
   },
 })
 
@@ -110,9 +102,7 @@ export const {
   addSession,
   updateSession,
   setLoading,
-  setError,
-  reset,
-  clearCurrentSession,
+  setError
 } = sessionSlice.actions
 
 export default sessionSlice.reducer

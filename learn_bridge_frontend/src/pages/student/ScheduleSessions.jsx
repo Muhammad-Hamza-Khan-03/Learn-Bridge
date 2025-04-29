@@ -322,12 +322,6 @@ const ScheduleSession = () => {
             )}
           </div>
 
-          <Link
-            to={`/tutor/${currentTutor._id}`}
-            className="block w-full text-center bg-white border border-indigo-600 text-indigo-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
-          >
-            View Full Profile
-          </Link>
         </div>
 
         {/* Right Column - Scheduling Form */}
