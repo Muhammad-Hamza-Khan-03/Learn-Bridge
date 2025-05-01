@@ -68,11 +68,8 @@ const CourseSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  },
-  courseImage: {
-    type: String,
-    default: 'default-course.jpg'
-  },
+  }
+ 
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

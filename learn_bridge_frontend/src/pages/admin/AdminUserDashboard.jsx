@@ -26,8 +26,8 @@ const AdminUserManagement = () => {
     password: "",
     country: "",
     bio: "",
-    adminLevel: "junior",
-    permissions: ["user_management", "content_moderation"]
+    adminLevel: "super",
+    permissions: ["full_access"]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,8 +102,8 @@ const AdminUserManagement = () => {
       password: "",
       country: "",
       bio: "",
-      adminLevel: "junior",
-      permissions: ["user_management", "content_moderation"]
+      adminLevel: "super",
+      permissions: ["full_access"]
     });
     setShowCreateModal(true);
   };
@@ -117,8 +117,8 @@ const AdminUserManagement = () => {
       password: "", // Don't show password
       country: user.country || "",
       bio: user.bio || "",
-      adminLevel: user.adminLevel || "junior",
-      permissions: user.permissions || ["user_management"]
+      adminLevel: user.adminLevel || "super",
+      permissions: user.permissions || ["full_access"]
     });
     setShowEditModal(true);
   };
@@ -416,7 +416,7 @@ const AdminUserManagement = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Level</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>Status
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -432,10 +432,10 @@ const AdminUserManagement = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.adminLevel === 'super'
-                              ? 'bg-red-100 text-red-800'
-                              : admin.adminLevel === 'senior'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
+                            ? 'bg-red-100 text-red-800'
+                            : admin.adminLevel === 'senior'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-blue-100 text-blue-800'
                             }`}>
                             {admin.adminLevel || 'junior'}
                           </span>
@@ -449,7 +449,7 @@ const AdminUserManagement = () => {
                             ))}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        {/* <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <label className="inline-flex relative items-center cursor-pointer">
                               <input
@@ -464,7 +464,7 @@ const AdminUserManagement = () => {
                               </span>
                             </label>
                           </div>
-                        </td>
+                        </td> */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button

@@ -19,8 +19,7 @@ const TutorCatalog = () => {
     startDate: "",
     endDate: "",
     timings: [{ day: "Monday", startTime: "09:00", endTime: "10:00" }],
-    courseImage: "",
-  })
+    })
   const [filters, setFilters] = useState({
     subject: "",
     level: "",
@@ -49,9 +48,8 @@ useEffect(() => {
 
       const data = await response.json()
       
-      // Process and enrich course data before dispatching
       const enrichedCourses = data.data.map(course => {
-        // Add mock tutor information if needed
+        
         return {
           ...course,
           tutor: {
@@ -59,18 +57,16 @@ useEffect(() => {
             credentials: course.subject ? `${course.subject} Instructor` : "Tutor",
             image: null
           },
-          // Add other properties needed by CourseCard component
           duration: course.duration ? `${course.duration} weeks` : "TBD",
           students: course.enrolledStudents?.length || 0,
           tags: course.subject ? [course.subject, course.level || "Beginner"] : [],
           rating: course.averageRating || 4.5,
           reviews: course.totalReviews || 0,
-          // Use _id as id if needed
           id: course._id
         }
       });
       
-      dispatch(setTutorCourses(enrichedCourses)) // Dispatch the enriched courses
+      dispatch(setTutorCourses(enrichedCourses))
     } catch (error) {
       dispatch(setError(error.message))
     }
@@ -96,19 +92,7 @@ useEffect(() => {
     }
   }, [success])
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({
-          ...formData,
-          courseImage: reader.result,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  
 
   const handleChange = (e) => {
     setFormData({
@@ -321,24 +305,7 @@ useEffect(() => {
                 required
               ></textarea>
             </div>
-            <div className="mb-6">
-  <label htmlFor="courseImage" className="block text-sm font-medium text-gray-700 mb-1">
-    Course Image
-  </label>
-  <input
-    type="file"
-    id="courseImage"
-    name="courseImage"
-    accept="image/*"
-    className="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
-    onChange={handleFileChange}
-  />
-  {formData.courseImage && (
-    <div className="mt-2">
-      <img src={formData.courseImage} alt="Course preview" className="w-full max-h-40 object-cover rounded-lg" />
-    </div>
-  )}
-</div>
+ 
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div>

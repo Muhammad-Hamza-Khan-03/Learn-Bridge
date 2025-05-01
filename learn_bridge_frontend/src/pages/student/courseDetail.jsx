@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { Calendar, Clock, User, ChevronLeft, Star } from "lucide-react"
 import { setCourse,setLoading, setError, updateCourseInState } from "../../redux/slices/courseSlice"
-import useToastContext from "../../components/ui/toastContextProvider"
+import {useToastContext} from "../../components/ui/toastContextProvider"
 
 const BASE_URL = "http://localhost:5000/api"
 // API endpoints
@@ -16,15 +16,14 @@ export const API_URLS = {
 
 
 const CourseDetail = () => {
-  const {addToast} = useToastContext()
+  const { addToast } = useToastContext()
   const { courseId } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { course, isLoading, error } = useSelector((state) => state.courses)
   const { user } = useSelector((state) => state.auth)
   const [enrolling, setEnrolling] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
-  const [errorMessage, setErrorMessage] = useState("")
+  const [localError, setLocalError] = useState("")
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -46,13 +45,13 @@ const CourseDetail = () => {
         dispatch(setError(error.message))
       }
     }
-    
 
     fetchCourse()
   }, [dispatch, courseId])
 
   const handleEnroll = async () => {
     setEnrolling(true)
+    setLocalError("")
     try {
       const response = await fetch(`${BASE_URL}/courses/${courseId}/enroll`, {
         method: "PUT",
@@ -63,25 +62,27 @@ const CourseDetail = () => {
       })
   
       if (!response.ok) {
-        throw new Error("Failed to enroll in course")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to enroll in course")
       }
   
       const data = await response.json()
       dispatch(updateCourseInState(data.data))
-      setSuccessMessage("Successfully enrolled in course!")
-      setTimeout(() => setSuccessMessage(""), 3000)
+      addToast("Successfully enrolled in course!", "success")
     } catch (error) {
-      setErrorMessage(error.message || "Failed to enroll in course")
-      setTimeout(() => setErrorMessage(""), 3000)
+      setLocalError(error.message || "Failed to enroll in course")
+      addToast(error.message || "Failed to enroll in course", "error")
     } finally {
       setEnrolling(false)
     }
   }
-
-  const isEnrolled = course?.enrolledStudents?.some((student) => student._id === user?._id || student === user?._id)
+  const isEnrolled = course?.enrolledStudents?.some(
+    (student) => student._id === user?._id || student === user?._id
+  )
 
   const handleUnenroll = async () => {
-    setEnrolling(true);
+    setEnrolling(true)
+    setLocalError("")
     try {
       const response = await fetch(`${BASE_URL}/courses/${courseId}/unenroll`, {
         method: "PUT",
@@ -89,23 +90,24 @@ const CourseDetail = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      });
+      })
   
       if (!response.ok) {
-        throw new Error("Failed to unenroll from course");
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to unenroll from course")
       }
   
-      const data = await response.json();
-      dispatch(updateCourseInState(data.data));
-      // setSuccessMessage("Successfully unenrolled from course!");
-      addToast("Successfully unenrolled from course!", "success");
+      const data = await response.json()
+      dispatch(updateCourseInState(data.data))
+      addToast("Successfully unenrolled from course!", "success")
     } catch (error) {
-      // setErrorMessage(error.message || "Failed to unenroll from course");
-      addToast(error.message || "Failed to unenroll from course", "error");
+      console.error("Unenroll error:", error)
+      setLocalError(error.message || "Failed to unenroll from course")
+      addToast(error.message || "Failed to unenroll from course", "error")
     } finally {
-      setEnrolling(false);
+      setEnrolling(false)
     }
-  };
+  }
 
   const formatTimings = (timings) => {
     if (!timings || !Array.isArray(timings) || timings.length === 0) {
@@ -156,9 +158,7 @@ const CourseDetail = () => {
         <h1 className="text-2xl font-bold text-gray-800 ml-4">{course.title}</h1>
       </div>
 
-      {successMessage && <div className="bg-emerald-50 text-emerald-600 p-4 rounded-lg">{successMessage}</div>}
-
-      {errorMessage && <div className="bg-rose-50 text-rose-600 p-4 rounded-lg">{errorMessage}</div>}
+      {localError && <div className="bg-rose-50 text-rose-600 p-4 rounded-lg">{localError}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
@@ -283,28 +283,32 @@ const CourseDetail = () => {
             </div>
 
             {user?.role === "student" && (
-  <button
-    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 cursor-text transition-colors flex items-center justify-center"
-    disabled={isEnrolled || course.enrolledStudents.length >= course.maxStudents || enrolling}
-    onClick={isEnrolled ? handleUnenroll : handleEnroll}
-  >
-    {enrolling ? (
-      <>
-        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2 cursor-pointer"></div>
-        {isEnrolled ? "Unenrolling..." : "Enrolling..."}
-      </>
-    ) : isEnrolled ? (
-      "Unenroll from Course"
-    ) : course.enrolledStudents.length >= course.maxStudents ? (
-      "Course Full"
-    ) : (
-      "Enroll Now"
-    )}
-  </button>
+              <button
+                className={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center ${
+                  isEnrolled
+                    ? "bg-rose-600 text-white hover:bg-rose-700"
+                    : course.enrolledStudents.length >= course.maxStudents
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                }`}
+                disabled={(!isEnrolled && course.enrolledStudents.length >= course.maxStudents) || enrolling}
+                onClick={isEnrolled ? handleUnenroll : handleEnroll}
+              >
+                {enrolling ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    {isEnrolled ? "Unenrolling..." : "Enrolling..."}
+                  </>
+                ) : isEnrolled ? (
+                  "Unenroll from Course"
+                ) : course.enrolledStudents.length >= course.maxStudents ? (
+                  "Course Full"
+                ) : (
+                  "Enroll Now"
+                )}
+              </button>
             )}
           </div>
-
-       
 
           {/* Tutor Card */}
           <div className="bg-white rounded-xl shadow-sm p-6">
@@ -344,16 +348,14 @@ const CourseDetail = () => {
                 </p>
               )}
             </div>
-       
 
-           
+            <Link
+              to={`/student/schedule/${course.tutor._id}?course=${course._id}`}
+              className="block w-full mt-3 text-center bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              Schedule Session with Tutor
+            </Link>
           </div>
-          <Link
-  to={`/student/schedule/${course.tutor._id}?course=${course._id}`}
-  className="block w-full mt-3 text-center bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
->
-  Schedule Session with Tutor
-</Link>
         </div>
       </div>
     </div>

@@ -262,33 +262,47 @@ export const createCourse = async (req, res, next) => {
   // @desc    Unenroll from course
   // @route   PUT /api/courses/:id/unenroll
   // @access  Private/Student
-  export const unenrollCourse = async (req, res, next) => {
+  export const unenrollCourse = async (req, res) => {
     try {
       const course = await Course.findById(req.params.id);
   
       if (!course) {
-        return next(new Error(`Course not found with id of ${req.params.id}`, 404));
+        return res.status(404).json({
+          success: false,
+          error: `Course not found with id of ${req.params.id}`
+        });
       }
   
       // Check if user is a student
       if (req.user.role !== 'student') {
-        return next(new Error('Only students can unenroll from courses', 403));
+        return res.status(403).json({
+          success: false,
+          error: 'Only students can unenroll from courses'
+        });
       }
   
-      // Check if student is enrolled
-      if (!course.enrolledStudents.includes(req.user.id)) {
-        return next(new Error('Student not enrolled in this course', 400));
+      // Check if student is enrolled - needs to convert ObjectIds to strings for comparison
+      const studentId = req.user.id;
+      const isEnrolled = course.enrolledStudents.some(
+        student => student.toString() === studentId
+      );
+  
+      if (!isEnrolled) {
+        return res.status(400).json({
+          success: false,
+          error: 'Student not enrolled in this course'
+        });
       }
   
       // Remove student from course
       course.enrolledStudents = course.enrolledStudents.filter(
-        student => student.toString() !== req.user.id
+        student => student.toString() !== studentId
       );
       await course.save();
   
       // Remove course from student's enrolledCourses
       await Student.findByIdAndUpdate(
-        req.user.id,
+        studentId,
         { $pull: { enrolledCourses: course._id } }
       );
   
@@ -297,7 +311,11 @@ export const createCourse = async (req, res, next) => {
         data: course
       });
     } catch (err) {
-      next(err);
+      console.error('Error in unenrollCourse:', err);
+      res.status(500).json({
+        success: false,
+        error: err.message || 'Server Error'
+      });
     }
   };
   

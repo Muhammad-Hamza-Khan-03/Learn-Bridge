@@ -595,12 +595,12 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${session.status === "completed"
-                            ? "bg-green-100 text-green-800"
-                            : session.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : session.status === "cancelled"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-blue-100 text-blue-800"
+                          ? "bg-green-100 text-green-800"
+                          : session.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : session.status === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-blue-100 text-blue-800"
                           }`}>
                           {session.status}
                         </span>
@@ -715,7 +715,7 @@ const AdminDashboard = () => {
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -732,16 +732,16 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === "student"
-                                ? "bg-blue-100 text-blue-800"
-                                : user.role === "tutor"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                              ? "bg-blue-100 text-blue-800"
+                              : user.role === "tutor"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
                               }`}>
                               {user.role}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.country}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          {/* <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <label className="inline-flex relative items-center cursor-pointer">
                                 <input
@@ -756,7 +756,7 @@ const AdminDashboard = () => {
                                 </span>
                               </label>
                             </div>
-                          </td>
+                          </td> */}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
@@ -795,8 +795,8 @@ const AdminDashboard = () => {
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() => currentPage > 1 && paginate(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -812,8 +812,8 @@ const AdminDashboard = () => {
                         key={i}
                         onClick={() => paginate(i + 1)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === i + 1
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                           }`}
                       >
                         {i + 1}
@@ -822,8 +822,8 @@ const AdminDashboard = () => {
 
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() =>
                         currentPage < Math.ceil(filteredUsers.length / itemsPerPage) &&
@@ -964,12 +964,12 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${session.status === "completed"
-                                ? "bg-green-100 text-green-800"
-                                : session.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : session.status === "accepted"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-red-100 text-red-800"
+                              ? "bg-green-100 text-green-800"
+                              : session.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : session.status === "accepted"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-red-100 text-red-800"
                               }`}>
                               {session.status}
                             </span>
@@ -1013,8 +1013,8 @@ const AdminDashboard = () => {
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() => currentPage > 1 && paginate(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -1030,8 +1030,8 @@ const AdminDashboard = () => {
                         key={i}
                         onClick={() => paginate(i + 1)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === i + 1
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                           }`}
                       >
                         {i + 1}
@@ -1040,8 +1040,8 @@ const AdminDashboard = () => {
 
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === Math.ceil(filteredSessions.length / itemsPerPage)
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() =>
                         currentPage < Math.ceil(filteredSessions.length / itemsPerPage) &&
@@ -1170,7 +1170,7 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(course.startDate).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap"> 
                             <div className="flex items-center">
                               <label className="inline-flex relative items-center cursor-pointer">
                                 <input
@@ -1188,22 +1188,6 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <label className="inline-flex relative items-center cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      className="sr-only peer"
-                                      checked={course.isActive}
-                                      onChange={() => handleCourseStatusToggle(course._id, course.isActive)}
-                                    />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                    <span className="ml-3 text-sm font-medium text-gray-700">
-                                      {course.isActive ? 'Active' : 'Inactive'}
-                                    </span>
-                                  </label>
-                                </div>
-                              </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex space-x-2">
                                   <button
@@ -1241,8 +1225,8 @@ const AdminDashboard = () => {
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() => currentPage > 1 && paginate(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -1258,8 +1242,8 @@ const AdminDashboard = () => {
                         key={i}
                         onClick={() => paginate(i + 1)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === i + 1
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                           }`}
                       >
                         {i + 1}
@@ -1268,8 +1252,8 @@ const AdminDashboard = () => {
 
                     <button
                       className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === Math.ceil(filteredCourses.length / itemsPerPage)
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                         }`}
                       onClick={() =>
                         currentPage < Math.ceil(filteredCourses.length / itemsPerPage) &&
@@ -1315,8 +1299,8 @@ const AdminDashboard = () => {
           <nav className="flex -mb-px">
             <button
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === "dashboard"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               onClick={() => setActiveTab("dashboard")}
             >
@@ -1327,8 +1311,8 @@ const AdminDashboard = () => {
             </button>
             <button
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === "users"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               onClick={() => {
                 setActiveTab("users");
@@ -1342,8 +1326,8 @@ const AdminDashboard = () => {
             </button>
             <button
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === "sessions"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               onClick={() => {
                 setActiveTab("sessions");
@@ -1357,8 +1341,8 @@ const AdminDashboard = () => {
             </button>
             <button
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === "courses"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               onClick={() => {
                 setActiveTab("courses");

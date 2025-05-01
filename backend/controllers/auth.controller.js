@@ -150,7 +150,7 @@ export const signin = async (req, res) => {
   
       // Update last login for admin users
       if (user.role === 'admin') {
-        await Admin.findByIdAndUpdate(user._id, { lastLogin: Date.now() });
+        await Admin.findByIdAndUpdate(user._id);
       }
   
       // Create token

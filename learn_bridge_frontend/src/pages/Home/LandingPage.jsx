@@ -16,6 +16,9 @@ import {
 } from "lucide-react"
 import {useTheme } from "../../components/ui/theme-context"
 import SignInModal from "../../components/auth-modals/sign-in"
+import studentImage from "../../assets/student.png";
+import TutorImage from "../../assets/tutor.png"
+import homeImage from "../../assets/home.jpg"
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("student")
@@ -301,7 +304,7 @@ function LandingPage() {
                   ></div>
                   <div className="rounded-xl overflow-hidden relative z-10">
                     <img
-                      src="https://img.freepik.com/free-vector/online-tutor-concept-illustration_114360-20299.jpg?t=st=1745045799~exp=1745049399~hmac=cf4c3877d9fdd7496543484955832264a1a3d204dc21d7cc1f83dfc5fd8554d0&w=1380"
+                      src={homeImage}
                       alt="Platform Preview"
                       width={800}
                       height={600}
@@ -464,7 +467,7 @@ function LandingPage() {
                 >
                   <div className="rounded-xl overflow-hidden relative z-10">
                     <img
-                      src="/placeholder.svg?height=500&width=600"
+                      src={studentImage}
                       alt="Student Dashboard"
                       width={600}
                       height={500}
@@ -487,7 +490,7 @@ function LandingPage() {
                 >
                   <div className="rounded-xl overflow-hidden relative z-10">
                     <img
-                      src="/placeholder.svg?height=500&width=600"
+                      src={TutorImage}
                       alt="Teacher Dashboard"
                       width={600}
                       height={500}
