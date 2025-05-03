@@ -1,4 +1,3 @@
-// learn_bridge_frontend/src/components/page-components/UpcomingSessionCard.jsx (updates)
 import { Calendar, Clock, Video, MessageSquare } from "lucide-react"
 import { Link } from "react-router-dom"
 

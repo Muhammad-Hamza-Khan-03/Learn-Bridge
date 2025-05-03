@@ -24,8 +24,6 @@ import TutorMeetings from './pages/tutor/tutorChatMeeting'
 import UserProfile from './pages/UserProfile/UserProfile'
 import ChatRoom from './pages/shared-sockets/ChatRoom'
 import VideoRoom from './pages/shared-sockets/VideoRoom'
-import ProtectedAdminRoute from './pages/admin/ProtectAdmin'
-// import JoinForm from './pages/shared-sockets/joinform'
 import { useEffect } from "react";
 import {
   selectIsConnectedToRoom,

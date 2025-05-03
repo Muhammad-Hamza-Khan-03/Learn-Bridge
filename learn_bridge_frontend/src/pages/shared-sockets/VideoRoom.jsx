@@ -48,8 +48,6 @@ const VideoRoom = () => {
   const messagesEndRef = useRef(null);
 
 
-
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       if (isConnected) {
@@ -58,7 +56,6 @@ const VideoRoom = () => {
     };
   }, [hmsActions, isConnected]);
 
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -78,7 +75,6 @@ const VideoRoom = () => {
       try {
         setRoomConfig(prev => ({ ...prev, isLoading: true, error: null }));
         
-        // Use environment variables based on user role instead of API calls
         const roomId = user.role === "tutor" 
           ? import.meta.env.TUTOR_ROOM_ID 
           : import.meta.env.STUDENT_ROOM_ID;
@@ -87,7 +83,6 @@ const VideoRoom = () => {
           throw new Error(`Room ID for ${user.role} role is not configured`);
         }
         
-        // Create a simple mock token (in a real app, you would use a proper token generation mechanism)
         const mockToken = `mock-token-${Date.now()}-${user.role}`;
         
         setRoomConfig({
@@ -97,7 +92,6 @@ const VideoRoom = () => {
           error: null
         });
 
-        // Set room code based on environment variable
         setRoomCode(roomId);
         
         console.log(`Using ${user.role} room: ${roomId}`);

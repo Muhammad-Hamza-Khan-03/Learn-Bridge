@@ -14,9 +14,9 @@ const initializeSocket = (server) => {
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"]
     },
-    transports: ['websocket', 'polling'], // Ensure both transports are enabled
-    pingTimeout: 60000, // Increase ping timeout
-    pingInterval: 25000, // Adjust ping interval
+    transports: ['websocket', 'polling'], 
+    pingTimeout: 60000, 
+    pingInterval: 25000, 
   });
 
   // Store active sockets

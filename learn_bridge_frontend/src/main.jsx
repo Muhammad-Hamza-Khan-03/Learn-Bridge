@@ -13,7 +13,6 @@ import io from "socket.io-client"
 
 const SOCKET_URL = "http://localhost:5000"
 
-// Create window.io namespace to store socket related objects
 window.io = {
   connect: (token) => {
     if (window.io.socket) {

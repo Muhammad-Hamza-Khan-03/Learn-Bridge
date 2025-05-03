@@ -4,14 +4,14 @@ import { Home, BookOpen, Search, Video, Star, Calendar, Settings, LogOut, Menu, 
 
 const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
   const { user } = useSelector(state => state.auth);
-  
+
   const studentNavItems = [
     { name: "Dashboard", icon: Home, path: "/student/dashboard" },
     { name: "Courses", icon: BookOpen, path: "/student/catalog" },
     { name: "Search", icon: Search, path: "/student/search" },
     { name: "Meetings", icon: Video, path: "/student/meetings" },
     { name: "Reviews", icon: Star, path: "/student/reviews" },
-    { name: "Profile", icon: Settings, path: "/student/profile" },
+    // { name: "Profile", icon: Settings, path: "/student/profile" },
   ];
 
   const tutorNavItems = [
@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
     { name: "My Courses", icon: BookOpen, path: "/tutor/catalog" },
     { name: "Upcoming Sessions", icon: Calendar, path: "/tutor/meetings" },
     { name: "Find Students", icon: Search, path: "/tutor/search" },
-    { name: "Profile", icon: Settings, path: "/tutor/profile" },
+    // { name: "Profile", icon: Settings, path: "/tutor/profile" },
   ];
 
   const adminNavItems = [
@@ -51,9 +51,8 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -81,8 +80,7 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${
-                    isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+                  `flex items-center px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
                   }`
                 }
                 onClick={() => window.innerWidth < 768 && setIsOpen(false)}
@@ -102,8 +100,7 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
                 <NavLink
                   to="/admin/security"
                   className={({ isActive }) =>
-                    `flex items-center px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${
-                      isActive ? "bg-red-50 text-red-600" : "text-gray-700 hover:bg-gray-100"
+                    `flex items-center px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${isActive ? "bg-red-50 text-red-600" : "text-gray-700 hover:bg-gray-100"
                     }`
                   }
                   onClick={() => window.innerWidth < 768 && setIsOpen(false)}
@@ -132,19 +129,22 @@ const Sidebar = ({ isOpen, setIsOpen, role = "student" }) => {
                   {user?.name || (role === "admin" ? "Admin" : role === "student" ? "Student" : "Tutor")}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {role === "admin" 
-                    ? "Administrator" 
-                    : role === "student" 
-                      ? "Student" 
+                  {role === "admin"
+                    ? "Administrator"
+                    : role === "student"
+                      ? "Student"
                       : (user?.expertise?.length > 0 ? `${user.expertise[0]} Tutor` : "Tutor")}
                 </p>
               </div>
             </div>
             <div className="mt-6 space-y-2">
-              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <NavLink
+                to={role === "student" ? "/student/profile" : "/tutor/profile"}
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
                 <Settings className="w-5 h-5 mr-3" />
-                <span className="font-medium">Settings</span>
-              </button>
+                <span className="font-medium">Profile</span>
+              </NavLink>
               <button
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 onClick={() => {

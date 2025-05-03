@@ -6,7 +6,6 @@ import Session from '../models/Session.model.js';
 
 // @desc    Get messages between users
 // @route   GET /api/messages/:userId
-// @access  Private
 export const getMessagesBetweenUsers = async (req, res) => {
   try {
     // Validate userId parameter
@@ -45,12 +44,11 @@ export const getMessagesBetweenUsers = async (req, res) => {
         path: 'receiver',
         select: 'name role'
       })
-      .lean();  // Use lean() for better performance with large datasets
+      .lean(); 
 
-    // Log retrieved messages for debugging
     console.log(`Found ${messages.length} messages between users ${req.user.id} and ${req.params.userId}`);
 
-    // Check if population worked correctly 
+   
     for (const message of messages) {
       // If sender population failed
       if (!message.sender || typeof message.sender === 'string' || !message.sender.name) {
@@ -83,7 +81,6 @@ export const getMessagesBetweenUsers = async (req, res) => {
       }
     }
 
-    // For testing: If no messages exist, create a welcome message
     if (messages.length === 0) {
       // Create a welcome message object
       const welcomeMessage = {
@@ -124,7 +121,7 @@ export const getMessagesBetweenUsers = async (req, res) => {
 
 // @desc    Get session messages
 // @route   GET /api/messages/session/:sessionId
-// @access  Private
+
 export const getSessionMessages = async (req, res) => {
   try {
     const session = await Session.findById(req.params.sessionId);
@@ -211,7 +208,6 @@ export const getSessionMessages = async (req, res) => {
 
 // @desc    Send message
 // @route   POST /api/messages
-// @access  Private
 export const sendMessage = async (req, res) => {
     try {
       const { receiver, content, session } = req.body;
@@ -285,11 +281,8 @@ export const sendMessage = async (req, res) => {
     }
   };
 
-  // New function in backend/controllers/messages.controller.js
-
 // @desc    Delete all messages for a session
 // @route   DELETE /api/messages/session/:sessionId
-// @access  Private/Tutor & Admin
 export const deleteSessionMessages = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -342,7 +335,6 @@ export const deleteSessionMessages = async (req, res) => {
 
 // @desc    Mark messages as read
 // @route   PUT /api/messages/read/:userId
-// @access  Private
 export const markMessagesAsRead = async (req, res) => {
   try {
     // Validate userId parameter
@@ -404,7 +396,6 @@ export const markMessagesAsRead = async (req, res) => {
 
 // @desc    Get unread message count
 // @route   GET /api/messages/unread
-// @access  Private
 export const getUnreadMessageCount = async (req, res) => {
   try {
     const count = await Message.countDocuments({
@@ -427,7 +418,6 @@ export const getUnreadMessageCount = async (req, res) => {
 
 // @desc    Get user conversations
 // @route   GET /api/messages/conversations
-// @access  Private
 export const getUserConversations = async (req, res) => {
   try {
     // Find all users the current user has exchanged messages with
@@ -501,7 +491,6 @@ export const getUserConversations = async (req, res) => {
 
 // @desc    Clear all messages between two users
 // @route   DELETE /api/messages/:userId/clear
-// @access  Private
 export const clearConversation = async (req, res) => {
   try {
     const currentUserId = req.user.id;

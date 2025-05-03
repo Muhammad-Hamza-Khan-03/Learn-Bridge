@@ -2,7 +2,7 @@
 
 Learn-Bridge is a web application built using the MERN (MongoDB, Express, React, Node.js) stack. It is designed to enhance education by providing features such as session chats, one-on-one meetings, course selection, and tutor choices. The platform connects students and tutors, enabling seamless learning experiences.
 
-## Features
+## Important Features
 
 - **Course Management**: Create, manage, and enroll in courses tailored to educational needs.
 - **Smart Scheduling**: Book sessions based on availability, ratings, and preferences.

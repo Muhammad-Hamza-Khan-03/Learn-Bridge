@@ -4,7 +4,7 @@ import Session from '../models/Session.model.js';
 
 // @desc    Get reviews for a tutor
 // @route   GET /api/reviews/tutor/:tutorId
-// @access  Public
+
 export const getTutorReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ tutor: req.params.tutorId })
@@ -33,7 +33,7 @@ export const getTutorReviews = async (req, res) => {
 
 // @desc    Get reviews by a student
 // @route   GET /api/reviews/student
-// @access  Private/Student
+
 export const getStudentReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ student: req.user.id })
@@ -62,7 +62,7 @@ export const getStudentReviews = async (req, res) => {
 
 // @desc    Check if student has already reviewed a session
 // @route   GET /api/reviews/check/:sessionId
-// @access  Private/Student
+
 export const checkSessionReview = async (req, res) => {
   try {
     const review = await Review.findOne({
@@ -91,7 +91,6 @@ export const checkSessionReview = async (req, res) => {
 
 // @desc    Create a review
 // @route   POST /api/reviews
-// @access  Private/Student
 export const createReview = async (req, res) => {
   try {
     const { session: sessionId, tutor: tutorId, rating, comment } = req.body;
@@ -156,7 +155,6 @@ export const createReview = async (req, res) => {
 
 // @desc    Update a review
 // @route   PUT /api/reviews/:id
-// @access  Private/Student
 export const updateReview = async (req, res) => {
   try {
     let review = await Review.findById(req.params.id);
@@ -199,7 +197,6 @@ export const updateReview = async (req, res) => {
 
 // @desc    Delete a review
 // @route   DELETE /api/reviews/:id
-// @access  Private/Student
 export const deleteReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);

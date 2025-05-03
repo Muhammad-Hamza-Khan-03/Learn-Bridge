@@ -5,9 +5,7 @@ import Session from '../models/Session.model.js';
 import Message from '../models/Message.model.js';
 import Review from '../models/Review.model.js';
 
-// @desc    Get all users  
 // @route   GET /api/admin/users
-// @access  Private/Admin
 export const getUsers = async (req, res) => {
   try {
     const total = await User.countDocuments();
@@ -37,7 +35,6 @@ export const getUsers = async (req, res) => {
 
 // @desc    Get user details
 // @route   GET /api/admin/users/:id
-// @access  Private/Admin
 export const getUserDetails = async (req, res) => {
   try {
     let user;
@@ -79,7 +76,6 @@ export const getUserDetails = async (req, res) => {
 
 // @desc    Update user
 // @route   PUT /api/admin/users/:id
-// @access  Private/Admin
 export const updateUser = async (req, res) => {
   try {
     // Find user by ID
@@ -147,7 +143,6 @@ export const updateUser = async (req, res) => {
 
 // @desc    Delete user
 // @route   DELETE /api/admin/users/:id
-// @access  Private/Admin
 export const deleteUser = async (req, res) => {
   try {
     // Use findOneAndDelete to ensure it's properly deleted
@@ -184,7 +179,6 @@ export const deleteUser = async (req, res) => {
 
 // @desc    Get all sessions 
 // @route   GET /api/admin/sessions
-// @access  Private/Admin
 export const getSessions = async (req, res) => {
   try {
     const total = await Session.countDocuments();
@@ -222,7 +216,6 @@ export const getSessions = async (req, res) => {
 
 // @desc    Get platform statistics
 // @route   GET /api/admin/stats
-// @access  Private/Admin
 export const getPlatformStats = async (req, res) => {
   try {
     // Get user counts

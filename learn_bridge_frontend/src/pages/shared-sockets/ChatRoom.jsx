@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
@@ -30,7 +28,6 @@ const ChatRoom = () => {
   const [connectionStatus, setConnectionStatus] = useState("disconnected")
   const [darkMode, setDarkMode] = useState(false)
   const messagesEndRef = useRef(null)
-  const socketInitialized = useRef(false)
   const socketRef = useRef(null)
   const messageInputRef = useRef(null)
 
@@ -206,43 +203,39 @@ const ChatRoom = () => {
     }
   }, [dispatch, userId, user._id])
 
-  // Modify the handleEndChat function in learn_bridge_frontend/src/pages/shared-sockets/ChatRoom.jsx
+  const handleEndChat = async () => {
+    try {
+      if (userId) {
+        const deleteResponse = await fetch(`${BASE_URL}/messages/${userId}/clear`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-const handleEndChat = async () => {
-  try {
-    // First, try to clear messages for this conversation
-    if (userId) {
-      const deleteResponse = await fetch(`${BASE_URL}/messages/${userId}/clear`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      
-      if (deleteResponse.ok) {
-        console.log(`Successfully cleared messages for conversation with ${userId}`);
-      } else {
-        console.error(`Failed to clear messages for conversation with ${userId}`);
+        if (deleteResponse.ok) {
+          console.log(`Successfully cleared messages for conversation with ${userId}`);
+        } else {
+          console.error(`Failed to clear messages for conversation with ${userId}`);
+        }
       }
-    }
-    
-    // Clean up socket connection
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("leaveConversation", userId);
-      console.log(`Ending chat with user ${userId}`);
-    }
 
-    // Update Redux state
-    dispatch(setCurrentChat(null));
+      // Clean up socket connection
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.emit("leaveConversation", userId);
+        console.log(`Ending chat with user ${userId}`);
+      }
 
-    // Navigate back
-    navigate(-1);
-  } catch (error) {
-    console.error("Error ending chat:", error);
-    // Still navigate back even if there's an error
-    navigate(-1);
-  }
-};
+      // Update Redux state
+      dispatch(setCurrentChat(null));
+
+      // Navigate back
+      navigate(-1);
+    } catch (error) {
+      console.error("Error ending chat:", error);
+      navigate(-1);
+    }
+  };
 
   // Setup socket listeners
   const setupSocketListeners = () => {
@@ -718,22 +711,20 @@ const handleEndChat = async () => {
               <div>
                 <h2 className="font-medium text-white">{otherUser ? otherUser.name : "Chat"}</h2>
                 <div
-                  className={`flex items-center gap-1 text-xs ${
-                    connectionStatus === "connected"
+                  className={`flex items-center gap-1 text-xs ${connectionStatus === "connected"
                       ? "text-green-300"
                       : connectionStatus === "connecting"
                         ? "text-amber-300"
                         : "text-red-300"
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${
-                      connectionStatus === "connected"
+                    className={`w-2 h-2 rounded-full ${connectionStatus === "connected"
                         ? "bg-green-400"
                         : connectionStatus === "connecting"
                           ? "bg-amber-400"
                           : "bg-red-400"
-                    }`}
+                      }`}
                   ></span>
                   {connectionStatus === "connected"
                     ? "Online"
@@ -765,24 +756,6 @@ const handleEndChat = async () => {
         </div>
       </header>
 
-      {/* Error message
-      {(error || localError) && (
-        <div
-          className={`${darkMode ? "bg-red-900 border-red-800" : "bg-red-50 border-red-200"} border-b p-3 flex justify-between items-center`}
-        >
-          <div className="flex items-center gap-2 max-w-screen-lg mx-auto w-full px-4">
-            <AlertCircle className={`w-4 h-4 ${darkMode ? "text-red-300" : "text-red-500"} flex-shrink-0`} />
-            <p className={`${darkMode ? "text-red-200" : "text-red-700"} text-sm`}>{error || localError}</p>
-            <button
-              onClick={() => setLocalError(null)}
-              className={`ml-auto ${darkMode ? "text-red-300 hover:text-red-200" : "text-red-500 hover:text-red-700"} transition-colors`}
-              aria-label="Dismiss error"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )} */}
 
       {/* Messages container */}
       <div className="flex-1 overflow-hidden flex flex-col">
@@ -829,35 +802,32 @@ const handleEndChat = async () => {
                       )}
 
                       <div
-                        className={`flex ${isSentByMe ? "justify-end" : "justify-start"} ${
-                          isFirstInGroup ? "mt-4" : "mt-1"
-                        }`}
+                        className={`flex ${isSentByMe ? "justify-end" : "justify-start"} ${isFirstInGroup ? "mt-4" : "mt-1"
+                          }`}
                       >
                         <div className={`max-w-[70%] ${isSentByMe ? "order-1" : "order-2"}`}>
                           <div
-                            className={`px-4 py-2.5 rounded-lg shadow-sm ${
-                              isSentByMe
+                            className={`px-4 py-2.5 rounded-lg shadow-sm ${isSentByMe
                                 ? darkMode
                                   ? "bg-blue-600 text-white"
                                   : "bg-blue-500 text-white"
                                 : darkMode
                                   ? "bg-gray-800 text-gray-200 border-gray-700"
                                   : "bg-white text-gray-800 border border-gray-200"
-                            }`}
+                              }`}
                           >
                             <p className="break-words text-sm">{message.content}</p>
                           </div>
 
                           <div
-                            className={`flex items-center justify-end gap-1 mt-1 text-xs ${
-                              isSentByMe
+                            className={`flex items-center justify-end gap-1 mt-1 text-xs ${isSentByMe
                                 ? darkMode
                                   ? "text-gray-400"
                                   : "text-gray-500"
                                 : darkMode
                                   ? "text-gray-500"
                                   : "text-gray-400"
-                            }`}
+                              }`}
                           >
                             <span>{formatTime(message.createdAt)}</span>
 
@@ -929,11 +899,10 @@ const handleEndChat = async () => {
           <input
             ref={messageInputRef}
             type="text"
-            className={`flex-1 ${
-              darkMode
+            className={`flex-1 ${darkMode
                 ? "bg-gray-800 text-white placeholder-gray-400 focus:ring-blue-500 border-gray-700"
                 : "bg-gray-100 text-gray-900 focus:ring-blue-500 border-transparent"
-            } rounded-full px-5 py-3 focus:outline-none focus:ring-2 text-sm`}
+              } rounded-full px-5 py-3 focus:outline-none focus:ring-2 text-sm`}
             placeholder={connectionStatus === "connected" ? "Type a message..." : "Waiting for connection..."}
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
@@ -941,11 +910,9 @@ const handleEndChat = async () => {
           />
           <button
             type="submit"
-            className={`${
-              darkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"
-            } text-white px-6 py-3 rounded-full flex items-center gap-1.5 transition-all ${
-              !messageText.trim() || !userId || connectionStatus !== "connected" ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`${darkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"
+              } text-white px-6 py-3 rounded-full flex items-center gap-1.5 transition-all ${!messageText.trim() || !userId || connectionStatus !== "connected" ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             disabled={!messageText.trim() || !userId || connectionStatus !== "connected"}
           >
             <Send className="w-4 h-4" />

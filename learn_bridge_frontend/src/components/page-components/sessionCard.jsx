@@ -1,6 +1,3 @@
-// learn_bridge_frontend/src/components/page-components/sessionCard.jsx (updates)
-"use client"
-
 import { Calendar, Clock, Video, MessageSquare, User, CheckCircle, XCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 

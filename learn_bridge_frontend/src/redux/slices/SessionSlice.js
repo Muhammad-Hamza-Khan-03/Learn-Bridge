@@ -35,7 +35,6 @@ const sessionSlice = createSlice({
       state.error = null
     },
     addSession: (state, action) => {
-      // Check if session already exists to avoid duplicates
       const sessionExists = state.sessions.some(session => session._id === action.payload._id);
       const upcomingExists = state.upcomingSessions.some(session => session._id === action.payload._id);
       
@@ -46,7 +45,6 @@ const sessionSlice = createSlice({
       if (!upcomingExists && action.payload.status !== 'completed' && action.payload.status !== 'cancelled') {
         state.upcomingSessions.push(action.payload);
         
-        // Sort upcoming sessions by date and time
         state.upcomingSessions.sort((a, b) => {
           const dateA = new Date(a.date);
           const dateB = new Date(b.date);
@@ -64,7 +62,6 @@ const sessionSlice = createSlice({
     updateSession: (state, action) => {
       const updatedSession = action.payload
 
-      // Update in all session lists
       state.sessions = state.sessions.map((session) => (session._id === updatedSession._id ? updatedSession : session))
 
       state.upcomingSessions = state.upcomingSessions.map((session) =>

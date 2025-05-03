@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Star, ThumbsUp, MessageSquare } from "lucide-react"
-
+import {Link} from "react-router-dom"
 const Reviews = () => {
   const [filter, setFilter] = useState("all")
   const [reviews, setReviews] = useState([])
@@ -90,28 +90,34 @@ const Reviews = () => {
 
   const renderReviewCard = (review) => {
     if (review.status === "pending") {
+      // Extract information from pendingReviews
+      const pendingSession = pendingReviews.find((session) => session._id === review._id);
+  
       return (
         <div key={review._id} className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
           <div className="flex items-center mb-4">
             <img
-              src={(review.tutor?.profileImage) || "/placeholder.svg"}
-              alt={(review.tutor?.name) || "Tutor"}
+              src={pendingSession?.tutor?.profileImage || "/placeholder.svg"}
+              alt={pendingSession?.tutor?.name || "Tutor"}
               className="w-12 h-12 rounded-full mr-4"
             />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">{(review.tutor?.name) || "Tutor"}</h3>
-              <p className="text-sm text-gray-500">{review.tutor?.expertise?.[0] || "Tutor"}</p>
+              <h3 className="text-lg font-semibold text-gray-800">{pendingSession?.tutor?.name || "Tutor"}</h3>
+              <p className="text-sm text-gray-500">{pendingSession?.tutor?.expertise?.[0] || "Tutor"}</p>
             </div>
           </div>
-
+  
           <div className="bg-gray-50 rounded-lg p-4">
             <p className="text-gray-700 mb-4">You haven't reviewed this tutor yet.</p>
-            <a href={`/student/review/${review._id}`} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+            <Link
+              to={`/student/review/${pendingSession?._id}`}
+              className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
               Write a Review
-            </a>
+            </Link>
           </div>
         </div>
-      )
+      );
     }
 
     return (
@@ -141,17 +147,6 @@ const Reviews = () => {
               year: "numeric",
             })}
           </span>
-
-          <div className="flex items-center space-x-4">
-            <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-              <ThumbsUp className="w-4 h-4 mr-1" />
-              <span>Helpful ({review.helpful || 0})</span>
-            </button>
-            <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-              <MessageSquare className="w-4 h-4 mr-1" />
-              <span>Reply ({review.replies || 0})</span>
-            </button>
-          </div>
         </div>
       </div>
     )

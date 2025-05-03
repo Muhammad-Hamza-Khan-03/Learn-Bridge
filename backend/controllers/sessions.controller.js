@@ -6,7 +6,6 @@ import Course from '../models/Course.model.js';
 
 // @desc    Create a new session request
 // @route   POST /api/sessions
-// @access  Private/Student & Tutor
 export const createSession = async (req, res) => {
   try {
     // Get user role from request
@@ -112,7 +111,6 @@ export const createSession = async (req, res) => {
 
 // @desc    Get all sessions
 // @route   GET /api/sessions
-// @access  Private
 export const getSessions = async (req, res) => {
   try {
     let query;
@@ -159,7 +157,6 @@ export const getSessions = async (req, res) => {
 
 // @desc    Get single session
 // @route   GET /api/sessions/:id
-// @access  Private
 export const getSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id)
@@ -209,7 +206,6 @@ export const getSession = async (req, res) => {
 
 // @desc    Update session status
 // @route   PUT /api/sessions/:id
-// @access  Private/Tutor
 export const updateSessionStatus = async (req, res) => {
   try {
     let session = await Session.findById(req.params.id);
@@ -267,7 +263,6 @@ export const updateSessionStatus = async (req, res) => {
 
 // @desc    Add meeting link to session
 // @route   PUT /api/sessions/:id/meeting-link
-// @access  Private/Tutor
 export const addMeetingLink = async (req, res) => {
   try {
     let session = await Session.findById(req.params.id);
@@ -317,7 +312,6 @@ export const addMeetingLink = async (req, res) => {
 
 // @desc    Get upcoming sessions
 // @route   GET /api/sessions/upcoming
-// @access  Private
 export const getUpcomingSessions = async (req, res) => {
   try {
     console.log("Getting upcoming sessions for user:", req.user.id, "with role:", req.user.role);
@@ -388,7 +382,6 @@ export const getUpcomingSessions = async (req, res) => {
 
 // @desc    Get session history
 // @route   GET /api/sessions/history
-// @access  Private
 
 export const getSessionHistory = async (req, res) => {
   try {

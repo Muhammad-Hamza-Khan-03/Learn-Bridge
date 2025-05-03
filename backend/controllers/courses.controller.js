@@ -5,7 +5,6 @@ import Student from '../models/Student.model.js';
 
 // @desc    Create a new course
 // @route   POST /api/courses
-// @access  Private/Tutor
 export const createCourse = async (req, res, next) => {
     try {
       // Check if user is a tutor
@@ -36,7 +35,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Get all courses
   // @route   GET /api/courses
-  // @access  Public
   export const getCourses = async (req, res, next) => {
     try {
       // Copy req.query
@@ -117,7 +115,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Get single course
   // @route   GET /api/courses/:id
-  // @access  Public
   export const getCourse = async (req, res, next) => {
     try {
       const course = await Course.findById(req.params.id)
@@ -145,7 +142,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Update course
   // @route   PUT /api/courses/:id
-  // @access  Private/Tutor
   export const updateCourse = async (req, res, next) => {
     try {
       let course = await Course.findById(req.params.id);
@@ -175,7 +171,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Delete course
   // @route   DELETE /api/courses/:id
-  // @access  Private/Tutor
  export const deleteCourse = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -212,7 +207,6 @@ export const createCourse = async (req, res, next) => {
   
 //   @desc    Enroll in course
 //   @route   PUT /api/courses/:id/enroll
-//   @access  Private/Student
   export const enrollCourse = async (req, res, next) => {
     try {
       const course = await Course.findById(req.params.id);
@@ -261,7 +255,6 @@ export const createCourse = async (req, res, next) => {
   };
   // @desc    Unenroll from course
   // @route   PUT /api/courses/:id/unenroll
-  // @access  Private/Student
   export const unenrollCourse = async (req, res) => {
     try {
       const course = await Course.findById(req.params.id);
@@ -321,7 +314,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Get courses for a tutor
   // @route   GET /api/courses/tutor
-  // @access  Private/Tutor
   export const getTutorCourses = async (req, res) => {
     try {
       // Use selective field projection and limit records
@@ -348,7 +340,6 @@ export const createCourse = async (req, res, next) => {
   
   // @desc    Get enrolled courses for a student
   // @route   GET /api/courses/student/enrolled
-  // @access  Private/Student
   export const getStudentCourses = async (req, res, next) => {
     try {
       // Check if user is a student

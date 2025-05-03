@@ -2,7 +2,6 @@ import { Star, Clock, Users, BookOpen } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const CourseCard = ({ course, linkTo ,onDelete}) => {
-  // Add validation to prevent errors when course object is incomplete
   if (!course) {
     return <div>Loading course data...</div>;
   }
