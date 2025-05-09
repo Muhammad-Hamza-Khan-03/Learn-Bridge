@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 const CalendarComponent = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
 
-  // Sample session data (dates with sessions)
   const sessionsData = [
     { date: new Date(2025, 3, 21), type: "math" },
     { date: new Date(2025, 3, 22), type: "physics" },

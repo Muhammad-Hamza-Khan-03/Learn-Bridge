@@ -231,9 +231,7 @@ const handleSubmit = async (e) => {
                 Remember me
               </label>
             </div>
-            <a href="#" className="text-sm text-blue-400 hover:text-blue-300">
-              Forgot password?
-            </a>
+           
           </div>
 
           <button

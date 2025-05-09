@@ -433,7 +433,6 @@ const ChatRoom = () => {
       }
     } catch (error) {
       console.error("Error marking messages as read:", error)
-      // Not setting error state as this is a non-critical operation
     }
   }
 
@@ -448,7 +447,7 @@ const ChatRoom = () => {
     if (messages && messages[userId]) {
       console.log("Updating local messages from Redux store. Count:", messages[userId].length)
 
-      // Don't filter messages, show all conversation messages
+      // show all conversation messages
       const sortedMessages = [...messages[userId]].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
       // Log the messages to debug

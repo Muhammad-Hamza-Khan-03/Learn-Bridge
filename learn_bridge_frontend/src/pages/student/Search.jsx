@@ -242,12 +242,7 @@ const Search = () => {
                     </div>
 
                     <div className="space-y-2 w-full">
-                      <Link
-                        to={`/tutor/${tutor._id}`}
-                        className="block w-full text-center bg-white border border-indigo-600 text-indigo-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
-                      >
-                        View Profile
-                      </Link>
+                     
                       <Link
                         to={`/student/schedule/${tutor._id}`}
                         className="block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"

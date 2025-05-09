@@ -248,12 +248,7 @@ export default function SignInPage() {
                     >
                       Password
                     </label>
-                    <Link
-                      to="/forgot-password"
-                      className={`text-sm ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"}`}
-                    >
-                      Forgot password?
-                    </Link>
+                   
                   </div>
                   <div className={`relative ${formErrors.password ? "mb-6" : "mb-0"}`}>
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

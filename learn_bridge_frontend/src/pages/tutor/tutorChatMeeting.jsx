@@ -537,7 +537,7 @@ const TutorMeetings = () => {
                     <Video className="h-6 w-6 text-[#3B82F6]" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Add Meeting Link</h3>
+                    {/* <h3 className="text-lg leading-6 font-medium text-gray-900">Add Meeting Link</h3> */}
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
                         Enter a Zoom, Google Meet, or other video conferencing link for this session.

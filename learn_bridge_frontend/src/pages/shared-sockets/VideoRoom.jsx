@@ -76,8 +76,8 @@ const VideoRoom = () => {
         setRoomConfig(prev => ({ ...prev, isLoading: true, error: null }));
         
         const roomId = user.role === "tutor" 
-          ? import.meta.env.TUTOR_ROOM_ID || "Enter your room ID here (wev-bboq-hry)"
-          : import.meta.env.STUDENT_ROOM_ID || "Enter your room ID here (bib-shyh-ctb)";
+          ? import.meta.env.TUTOR_ROOM_ID || "wev-bboq-hry"
+          : import.meta.env.STUDENT_ROOM_ID || "bib-shyh-ctb";
         
         if (!roomId) {
           throw new Error(`Room ID for ${user.role} role is not configured`);
